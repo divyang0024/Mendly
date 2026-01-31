@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/chat", chatRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");
