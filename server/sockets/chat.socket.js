@@ -48,6 +48,14 @@ export const chatSocketHandler = (io) => {
           lastMessageAt: new Date(),
         });
 
+        // If session title still default, set it from first message
+        const session = await Session.findById(sessionId);
+
+        if (session.title === "New Session") {
+          await Session.findByIdAndUpdate(sessionId, {
+            title: text.split(".")[0].slice(0, 40),
+          });
+        }
 
         // 2) Emit user_message_saved back to the same client (echo tempId & sessionId)
         // Use socket.emit so only the sender receives it; if you want all clients in a session,
@@ -97,7 +105,6 @@ export const chatSocketHandler = (io) => {
         await Session.findByIdAndUpdate(sessionId, {
           lastMessageAt: new Date(),
         });
-
 
         // 7) Emit ai_message to client (include sessionId)
         socket.emit("ai_message", {
