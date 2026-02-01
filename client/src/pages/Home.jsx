@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/axios";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const { logout } = useAuth();
@@ -18,6 +19,7 @@ export default function Home() {
       <h1>Frontend → Backend Test</h1>
       <p>{msg}</p>
       <button onClick={logout}>Logout</button>
+      <Link to="/chat">Go to Chat</Link>
     </div>
   );
 }

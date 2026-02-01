@@ -5,14 +5,12 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-export const generateAIResponse = async (text) => {
+export const generateAIResponse = async (messages) => {
+  console.log("Generating AI response with messages:", messages);
   const response = await ai.models.generateContent({
     model: "gemma-3-4b-it",
-    contents: `You are a supportive AI therapist.
-Respond calmly, empathetically, and help the user reflect.
-
-User: ${text}`,
+    contents: messages,
   });
 
-  return response.text;
+  return response.text?.trim();
 };
