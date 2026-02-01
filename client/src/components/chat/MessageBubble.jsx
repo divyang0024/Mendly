@@ -1,3 +1,5 @@
+import RiskLevelBadge from "../safety/RiskLevelBadge";
+
 export default function MessageBubble({ message }) {
   const isUser = message.role === "user";
 
@@ -6,21 +8,18 @@ export default function MessageBubble({ message }) {
       style={{
         display: "flex",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        marginBottom: 12, 
+        marginBottom: 10,
       }}
     >
       <div
         style={{
+          background: isUser ? "#d1e7ff" : "#f1f1f1",
+          padding: 12,
+          borderRadius: 8,
           maxWidth: "70%",
-          padding: "10px 14px",
-          borderRadius: 14,
-          lineHeight: 1.5,
-          background: isUser ? "#4caf50" : "#f1f1f1",
-          color: isUser ? "white" : "black",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word", 
         }}
       >
+        {!isUser && <RiskLevelBadge isSafety={message.isSafety} />}
         {message.text}
       </div>
     </div>

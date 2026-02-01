@@ -210,6 +210,17 @@ export function useChat() {
     socket.emit("send_message", { sessionId, text, tempId });
   };
 
+  const handleAIMessage = (msg) => {
+  if (!isForCurrentSession(msg)) return;
+
+  setMessages((prev) => {
+    const withoutTyping = prev.filter((m) => m._id !== "typing");
+    return [...withoutTyping, msg];
+  });
+};
+
+
+
   return {
     sessions,
     sessionId,
@@ -218,5 +229,6 @@ export function useChat() {
     selectSession,
     send,
     removeSession,
+    handleAIMessage
   };
 }

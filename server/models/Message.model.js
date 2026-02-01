@@ -24,6 +24,10 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isSafety: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export default mongoose.model("Message", messageSchema);

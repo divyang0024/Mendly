@@ -2,6 +2,7 @@ import SessionList from "../components/chat/SessionList";
 import { useChat } from "../hooks/useChat";
 import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
+import CrisisAlert from "../components/safety/CrisisAlert";
 import { useEffect, useRef } from "react";
 
 
@@ -17,6 +18,7 @@ export default function Chat() {
   } = useChat();
 
   const bottomRef = useRef(null);
+  const isSafetyActive = messages.some((m) => m.isSafety);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,6 +42,8 @@ export default function Chat() {
           height: "100vh",
         }}
       >
+        <CrisisAlert isSafety={isSafetyActive} />
+        {console.log("Safety Active:", isSafetyActive)}
         {/* Message area */}
         <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
           {messages.map((m) => (

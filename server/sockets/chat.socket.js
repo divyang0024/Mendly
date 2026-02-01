@@ -1,8 +1,12 @@
 // server/sockets/chat.socket.js
 import jwt from "jsonwebtoken";
 import Message from "../models/Message.model.js";
-import { generateAIResponse } from "../services/ai/gemma.service.js";
 import Session from "../models/Session.model.js";
+import { generateAIResponse } from "../services/ai/gemma.service.js";
+
+import { detectCrisis } from "../utils/crisisDetector.js";
+import { safetyMessage } from "../utils/safetyResponse.js";
+
 
 /**
  * chatSocketHandler(io)
@@ -31,12 +35,11 @@ export const chatSocketHandler = (io) => {
   });
 
   io.on("connection", (socket) => {
-    // send_message handler: receive sessionId, text, tempId
     socket.on("send_message", async ({ sessionId, text, tempId }) => {
       try {
         const userId = socket.userId;
 
-        // 1) Save user message to DB
+        /* 1️⃣ Save user message */
         const userMsg = await Message.create({
           sessionId,
           userId,
@@ -44,37 +47,56 @@ export const chatSocketHandler = (io) => {
           text,
         });
 
-        await Session.findByIdAndUpdate(sessionId, {
-          lastMessageAt: new Date(),
-        });
-
-        // If session title still default, set it from first message
+        // Set session title from first message
         const session = await Session.findById(sessionId);
-
         if (session.title === "New Session") {
           await Session.findByIdAndUpdate(sessionId, {
-            title: text.split(".")[0].slice(0, 40),
+            title: text.slice(0, 40),
           });
         }
 
-        // 2) Emit user_message_saved back to the same client (echo tempId & sessionId)
-        // Use socket.emit so only the sender receives it; if you want all clients in a session,
-        // consider using io.to(sessionRoom).emit and join sockets to room on connection.
         socket.emit("user_message_saved", {
           ...userMsg.toObject(),
           tempId,
           sessionId,
         });
 
-        // 3) Notify typing (include sessionId)
+        await Session.findByIdAndUpdate(sessionId, {
+          lastMessageAt: new Date(),
+        });
+
+        /* 🚨 2️⃣ SAFETY CHECK */
+        const isCrisis = detectCrisis(text);
+
+        if (isCrisis) {
+          const aiMsg = await Message.create({
+            sessionId,
+            userId,
+            role: "ai",
+            text: safetyMessage,
+            isSafety: true,
+          });
+
+
+          socket.emit("ai_message", {
+            ...aiMsg.toObject(),
+            sessionId,
+            isSafety: true, 
+          });
+
+
+          return; // STOP normal AI reply
+        }
+
+        /* 3️⃣ AI typing indicator */
         socket.emit("ai_typing", { sessionId });
 
-        // 4) Fetch latest history (most recent messages) and build memory
+        /* 4️⃣ Build memory */
         const history = await Message.find({ sessionId })
-          .sort({ createdAt: -1 }) // newest first
+          .sort({ createdAt: -1 })
           .limit(12);
 
-        const orderedHistory = history.reverse(); // oldest -> newest
+        const orderedHistory = history.reverse();
 
         const modelMessages = [
           {
@@ -91,10 +113,9 @@ export const chatSocketHandler = (io) => {
           })),
         ];
 
-        // 5) Generate AI response using the conversation memory
+        /* 5️⃣ Generate AI reply */
         const aiText = await generateAIResponse(modelMessages);
 
-        // 6) Save AI message to DB
         const aiMsg = await Message.create({
           sessionId,
           userId,
@@ -106,19 +127,22 @@ export const chatSocketHandler = (io) => {
           lastMessageAt: new Date(),
         });
 
-        // 7) Emit ai_message to client (include sessionId)
         socket.emit("ai_message", {
           ...aiMsg.toObject(),
           sessionId,
         });
       } catch (err) {
         console.error("send_message error:", err);
-        // inform client of error so UI can remove typing indicator etc.
-        socket.emit("ai_message_error", {
-          error: "Failed to process message",
+
+        socket.emit("ai_message", {
+          _id: "error-" + Date.now(),
+          role: "ai",
+          text: "I'm having trouble responding right now. Please try again.",
           sessionId,
         });
       }
     });
   });
+
+
 };

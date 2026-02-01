@@ -1,0 +1,16 @@
+export const crisisKeywords = [
+  "kill myself",
+  "suicide",
+  "end my life",
+  "i want to die",
+  "i wish i were dead",
+  "hurt myself",
+  "self harm",
+  "cut myself",
+  "no reason to live",
+  "can't go on",
+  "i give up",
+  "better off dead",
+  "life is pointless",
+  "i don't want to be here",
+];
