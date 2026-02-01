@@ -43,7 +43,6 @@ export default function Chat() {
         }}
       >
         <CrisisAlert isSafety={isSafetyActive} />
-        {console.log("Safety Active:", isSafetyActive)}
         {/* Message area */}
         <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
           {messages.map((m) => (

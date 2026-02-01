@@ -28,6 +28,11 @@ const messageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  emotion: {
+    type: String,
+    enum: ["anxious", "sad", "angry", "calm", "neutral"],
+    default: "neutral",
+  },
 });
 
 export default mongoose.model("Message", messageSchema);

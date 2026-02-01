@@ -5,6 +5,7 @@ import Session from "../models/Session.model.js";
 import { generateAIResponse } from "../services/ai/gemma.service.js";
 
 import { detectCrisis } from "../utils/crisisDetector.js";
+import { detectEmotion } from "../utils/emotionDetector.js";
 import { safetyMessage } from "../utils/safetyResponse.js";
 
 
@@ -40,12 +41,16 @@ export const chatSocketHandler = (io) => {
         const userId = socket.userId;
 
         /* 1️⃣ Save user message */
-        const userMsg = await Message.create({
-          sessionId,
-          userId,
-          role: "user",
-          text,
-        });
+       const emotion = detectEmotion(text);
+
+       const userMsg = await Message.create({
+         sessionId,
+         userId,
+         role: "user",
+         text,
+         emotion, // 🔥 store detected emotion
+       });
+
 
         // Set session title from first message
         const session = await Session.findById(sessionId);
@@ -60,6 +65,7 @@ export const chatSocketHandler = (io) => {
           tempId,
           sessionId,
         });
+
 
         await Session.findByIdAndUpdate(sessionId, {
           lastMessageAt: new Date(),
@@ -131,6 +137,7 @@ export const chatSocketHandler = (io) => {
           ...aiMsg.toObject(),
           sessionId,
         });
+        
       } catch (err) {
         console.error("send_message error:", err);
 

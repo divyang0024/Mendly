@@ -1,14 +1,15 @@
 import RiskLevelBadge from "../safety/RiskLevelBadge";
+import { emotionColors } from "../../utils/emotionColors";
 
 export default function MessageBubble({ message }) {
   const isUser = message.role === "user";
-
+  const emotionStyle = emotionColors[message.emotion] || emotionColors.neutral;
   return (
     <div
       style={{
         display: "flex",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        marginBottom: 10,
+        marginBottom: 14, // more spacing
       }}
     >
       <div
@@ -17,10 +18,32 @@ export default function MessageBubble({ message }) {
           padding: 12,
           borderRadius: 8,
           maxWidth: "70%",
+          lineHeight: 1.5,
         }}
       >
-        {!isUser && <RiskLevelBadge isSafety={message.isSafety} />}
-        {message.text}
+        {/* 🚨 Safety Badge (AI only) */}
+        {!isUser && message.isSafety && (
+          <RiskLevelBadge isSafety={message.isSafety} />
+        )}
+
+        {/* 💬 Message Text */}
+        <div style={{ marginBottom: 6 }}>{message.text}</div>
+
+        {/* 🎭 Emotion Badge (User only) */}
+        {isUser && message.emotion && (
+          <span
+            className={emotionColors[message.emotion] || emotionColors.neutral}
+            style={{
+              ...emotionStyle,
+              fontSize: 11,
+              padding: "2px 8px",
+              borderRadius: 999,
+              display: "inline-block",
+            }}
+          >
+            {message.emotion}
+          </span>
+        )}
       </div>
     </div>
   );
