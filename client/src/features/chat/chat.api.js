@@ -8,3 +8,5 @@ export const getHistory = (sessionId) =>
   api.get("/api/v1/chat/history", { params: { sessionId } });
 
 export const getSessions = () => api.get("/api/v1/chat/sessions");
+
+export const deleteSession = (id) => api.delete(`/api/v1/sessions/${id}`);

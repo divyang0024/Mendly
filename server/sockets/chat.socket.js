@@ -2,6 +2,7 @@
 import jwt from "jsonwebtoken";
 import Message from "../models/Message.model.js";
 import { generateAIResponse } from "../services/ai/gemma.service.js";
+import Session from "../models/Session.model.js";
 
 /**
  * chatSocketHandler(io)
@@ -42,6 +43,11 @@ export const chatSocketHandler = (io) => {
           role: "user",
           text,
         });
+
+        await Session.findByIdAndUpdate(sessionId, {
+          lastMessageAt: new Date(),
+        });
+
 
         // 2) Emit user_message_saved back to the same client (echo tempId & sessionId)
         // Use socket.emit so only the sender receives it; if you want all clients in a session,
@@ -87,6 +93,11 @@ export const chatSocketHandler = (io) => {
           role: "ai",
           text: aiText || "I'm here with you. Could you tell me more?",
         });
+
+        await Session.findByIdAndUpdate(sessionId, {
+          lastMessageAt: new Date(),
+        });
+
 
         // 7) Emit ai_message to client (include sessionId)
         socket.emit("ai_message", {

@@ -51,7 +51,7 @@ export const getHistory = asyncHandler(async (req, res) => {
 
 export const getUserSessions = asyncHandler(async (req, res) => {
   const sessions = await Session.find({ userId: req.user }).sort({
-    startedAt: -1,
+    lastMessageAt: -1,
   });
 
   res.json(sessions);

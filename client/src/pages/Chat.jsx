@@ -6,7 +6,16 @@ import { useEffect, useRef } from "react";
 
 
 export default function Chat() {
-  const { sessions, messages, newSession, selectSession, send } = useChat();
+  const {
+    sessions,
+    sessionId,
+    messages,
+    newSession,
+    selectSession,
+    send,
+    removeSession,
+  } = useChat();
+
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -19,6 +28,8 @@ export default function Chat() {
         sessions={sessions}
         onNew={newSession}
         onSelect={selectSession}
+        onDelete={removeSession}
+        activeId={sessionId}
       />
 
       <div

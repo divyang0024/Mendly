@@ -4,6 +4,7 @@ import {
   createSession,
   getHistory,
   getSessions,
+  deleteSession
 } from "../features/chat/chat.api";
 import socket from "../services/socket";
 
@@ -133,18 +134,20 @@ export function useChat() {
       );
     };
 
-    const handleAIMessage = (msg) => {
+    const handleAIMessage = async (msg) => {
       if (!isForCurrentSession(msg)) return;
 
       setMessages((prev) => {
-        // remove typing indicator and append AI message unless duplicate
         const withoutTyping = prev.filter((m) => m._id !== "typing");
-
         if (withoutTyping.some((m) => m._id === msg._id)) return withoutTyping;
-
         return [...withoutTyping, msg];
       });
+
+      // 🔥 Refresh sessions to re-sort
+      const { data } = await getSessions();
+      setSessions(data);
     };
+
 
     socket.on("user_message_saved", handleUserSaved);
     socket.on("ai_typing", handleAITyping);
@@ -167,6 +170,24 @@ export function useChat() {
       console.error("Failed to create session", err);
     }
   };
+
+ const removeSession = async (id) => {
+   try {
+     await deleteSession(id);
+
+     // Remove from session list
+     setSessions((prev) => prev.filter((s) => s._id !== id));
+
+     // If deleted session is active, clear chat window
+     if (sessionId === id) {
+       setSessionId(null);
+       setMessages([]);
+     }
+   } catch (err) {
+     console.error("Delete session failed", err);
+   }
+ };
+
 
   /* ---------- SELECT EXISTING SESSION ---------- */
   const selectSession = (id) => {
@@ -196,5 +217,6 @@ export function useChat() {
     newSession,
     selectSession,
     send,
+    removeSession,
   };
 }

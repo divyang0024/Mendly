@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
+import sessionRoutes from "./routes/session.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/sessions", sessionRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");

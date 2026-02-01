@@ -20,9 +20,13 @@ export const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // store user id on req.user for convenience
+
+    // 🔥 Keep old behavior
     req.user = decoded.id;
-    // also expose token if controllers need it (e.g., logout)
+
+    // 🔥 Add new consistent shape
+    req.userId = decoded.id;
+
     req.token = token;
     next();
   } catch (err) {
