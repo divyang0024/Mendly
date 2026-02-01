@@ -3,6 +3,7 @@ import { useChat } from "../hooks/useChat";
 import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
 import CrisisAlert from "../components/safety/CrisisAlert";
+import MoodChart from "../components/mood/MoodChart";
 import { useEffect, useRef } from "react";
 
 
@@ -48,6 +49,7 @@ export default function Chat() {
           {messages.map((m) => (
             <MessageBubble key={m._id} message={m} />
           ))}
+          <MoodChart messages={messages} />
 
           {/* 👇 This is the scroll anchor */}
           <div ref={bottomRef} />
