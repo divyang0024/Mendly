@@ -1,6 +1,11 @@
 import Message from "../models/Message.model.js";
 import { generateAIResponse } from "../services/ai/gemma.service.js";
 import { buildWeeklyReportPrompt } from "../services/insight.service.js";
+import {
+  getRecentEmotionalProfile,
+  getEmotionalTrend,
+  getEmotionalVolatility,
+} from "../services/emotionEngine.service.js";
 import mongoose from "mongoose";
 
 /* EMOTION STATS */
@@ -78,4 +83,22 @@ export const getWeeklyReport = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Report generation failed" });
   }
+};
+
+/* PROFILE */
+export const getEmotionalProfile = async (req, res) => {
+  const profile = await getRecentEmotionalProfile(req.user);
+  res.json(profile);
+};
+
+/* TREND */
+export const getTrend = async (req, res) => {
+  const trend = await getEmotionalTrend(req.user);
+  res.json(trend);
+};
+
+/* VOLATILITY */
+export const getVolatility = async (req, res) => {
+  const v = await getEmotionalVolatility(req.user);
+  res.json(v);
 };
