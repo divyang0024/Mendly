@@ -8,6 +8,16 @@ import { detectCrisis } from "../utils/crisisDetector.js";
 import { detectEmotion } from "../utils/emotionDetector.js";
 import { safetyMessage } from "../utils/safetyResponse.js";
 
+import {
+  getTherapistMode,
+  buildTherapistPrompt,
+} from "../services/therapistEngine.service.js";
+
+import {
+  getRecentEmotionalProfile,
+  getEmotionalTrend,
+  getEmotionalVolatility,
+} from "../services/insight.service.js";
 
 /**
  * chatSocketHandler(io)
@@ -41,16 +51,15 @@ export const chatSocketHandler = (io) => {
         const userId = socket.userId;
 
         /* 1️⃣ Save user message */
-       const emotion = detectEmotion(text);
+        const emotion = detectEmotion(text);
 
-       const userMsg = await Message.create({
-         sessionId,
-         userId,
-         role: "user",
-         text,
-         emotion, // 🔥 store detected emotion
-       });
-
+        const userMsg = await Message.create({
+          sessionId,
+          userId,
+          role: "user",
+          text,
+          emotion, // 🔥 store detected emotion
+        });
 
         // Set session title from first message
         const session = await Session.findById(sessionId);
@@ -65,7 +74,6 @@ export const chatSocketHandler = (io) => {
           tempId,
           sessionId,
         });
-
 
         await Session.findByIdAndUpdate(sessionId, {
           lastMessageAt: new Date(),
@@ -83,13 +91,11 @@ export const chatSocketHandler = (io) => {
             isSafety: true,
           });
 
-
           socket.emit("ai_message", {
             ...aiMsg.toObject(),
             sessionId,
-            isSafety: true, 
+            isSafety: true,
           });
-
 
           return; // STOP normal AI reply
         }
@@ -97,31 +103,45 @@ export const chatSocketHandler = (io) => {
         /* 3️⃣ AI typing indicator */
         socket.emit("ai_typing", { sessionId });
 
-        /* 4️⃣ Build memory */
+        /* 4️⃣ Emotional State (Adaptive Engine) */
+        const profile = await getRecentEmotionalProfile(userId);
+        const trendData = await getEmotionalTrend(userId);
+        const volatilityData = await getEmotionalVolatility(userId);
+
+        // determine dominant emotion
+        const dominantEmotion =
+          Object.entries(profile.percentages || {}).sort(
+            (a, b) => b[1] - a[1],
+          )[0]?.[0] || "neutral";
+
+        // volatility classification
+        const volatility = volatilityData.volatility > 50 ? "high" : "low";
+
+        const mode = getTherapistMode(
+          { dominantEmotion },
+          trendData.trend,
+          volatility,
+        );
+        // console.log(
+        //   "Therapist Mode:",
+        //   dominantEmotion
+        // );
+        /* 5️⃣ Build conversation memory */
         const history = await Message.find({ sessionId })
           .sort({ createdAt: -1 })
           .limit(12);
 
-        const orderedHistory = history.reverse();
+        const orderedHistory = history.reverse().map((m) => ({
+          role: m.role === "user" ? "user" : "model",
+          parts: [{ text: m.text }],
+        }));
 
-        const modelMessages = [
-          {
-            role: "user",
-            parts: [
-              {
-                text: "You are a calm, supportive AI therapist. Help the user reflect and feel safe.",
-              },
-            ],
-          },
-          ...orderedHistory.map((m) => ({
-            role: m.role === "user" ? "user" : "model",
-            parts: [{ text: m.text }],
-          })),
-        ];
+        /* 6️⃣ Build Adaptive Prompt */
+        const modelMessages = buildTherapistPrompt(mode, orderedHistory);
 
-        /* 5️⃣ Generate AI reply */
+        /* 7️⃣ Generate AI reply */
         const aiText = await generateAIResponse(modelMessages);
-
+        /* 8️⃣ Save AI message */
         const aiMsg = await Message.create({
           sessionId,
           userId,
@@ -129,15 +149,16 @@ export const chatSocketHandler = (io) => {
           text: aiText || "I'm here with you. Could you tell me more?",
         });
 
+        /* 9️⃣ Update session activity */
         await Session.findByIdAndUpdate(sessionId, {
           lastMessageAt: new Date(),
         });
 
+        /* 🔟 Emit AI message */
         socket.emit("ai_message", {
           ...aiMsg.toObject(),
           sessionId,
         });
-        
       } catch (err) {
         console.error("send_message error:", err);
 
@@ -150,6 +171,4 @@ export const chatSocketHandler = (io) => {
       }
     });
   });
-
-
 };
