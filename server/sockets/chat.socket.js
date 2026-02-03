@@ -108,20 +108,48 @@ export const chatSocketHandler = (io) => {
         const trendData = await getEmotionalTrend(userId);
         const volatilityData = await getEmotionalVolatility(userId);
 
-        // determine dominant emotion
+        // sanitize responses from insight services
+        const safeProfile =
+          profile && profile.percentages ? profile : { percentages: {} };
+        const safeTrend =
+          trendData && trendData.trend ? trendData.trend : "stable";
+
+        // volatility: prefer raw "changes" (integer). Normalize to a simple low/medium/high scale.
+        const rawVol =
+          typeof (volatilityData && volatilityData.volatility) === "number"
+            ? volatilityData.volatility
+            : 0;
+
+        // map rawVol → level. Adjust thresholds after you collect real telemetry.
+        let volatilityLevel = "low";
+        if (rawVol >= 7)
+          volatilityLevel = "high"; // many shifts in a short history
+        else if (rawVol >= 3) volatilityLevel = "medium";
+
+        // Determine dominant emotion: prefer profile top, else fallback to current message emotion, else neutral.
         const dominantEmotion =
-          Object.entries(profile.percentages || {}).sort(
+          Object.entries(safeProfile.percentages).sort(
             (a, b) => b[1] - a[1],
-          )[0]?.[0] || "neutral";
+          )[0]?.[0] ||
+          emotion || // fallback to the emotion detected from the current text
+          "neutral";
 
-        // volatility classification
-        const volatility = volatilityData.volatility > 50 ? "high" : "low";
+        // debug log (remove or turn off in production)
+        console.log("Intervention inputs:", {
+          dominantEmotion,
+          profile: safeProfile.percentages,
+          trend: safeTrend,
+          rawVol,
+          volatilityLevel,
+        });
 
+        // now call your mode function with safe inputs
         const mode = getTherapistMode(
           { dominantEmotion },
-          trendData.trend,
-          volatility,
+          safeTrend,
+          volatilityLevel,
         );
+
         // console.log(
         //   "Therapist Mode:",
         //   dominantEmotion
