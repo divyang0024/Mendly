@@ -33,6 +33,10 @@ const messageSchema = new mongoose.Schema({
     enum: ["anxious", "sad", "angry", "calm", "neutral"],
     default: "neutral",
   },
+  intervention: {
+    type: Object,
+    default: null,
+  },
 });
 
 export default mongoose.model("Message", messageSchema);

@@ -1,4 +1,3 @@
-// server/sockets/chat.socket.js
 import jwt from "jsonwebtoken";
 import Message from "../models/Message.model.js";
 import Session from "../models/Session.model.js";
@@ -19,28 +18,20 @@ import {
   getEmotionalVolatility,
 } from "../services/insight.service.js";
 
-/**
- * chatSocketHandler(io)
- * - Auth middleware: verifies JWT from socket.handshake.auth.token and attaches userId to socket
- * - send_message handler expects: { sessionId, text, tempId }
- * - Emits:
- *    - "user_message_saved": { ...dbMessage, tempId, sessionId }
- *    - "ai_typing": { sessionId }
- *    - "ai_message": { ...dbAiMessage, sessionId }
- */
+/* ✅ NEW */
+import { getIntervention } from "../services/interventionEngine.service.js";
+
 export const chatSocketHandler = (io) => {
-  // socket auth
+  /* ================= AUTH ================= */
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
-    if (!token) {
-      return next(new Error("Unauthorized"));
-    }
+    if (!token) return next(new Error("Unauthorized"));
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       socket.userId = decoded.id;
       next();
-    } catch (err) {
+    } catch {
       next(new Error("Unauthorized"));
     }
   });
@@ -50,7 +41,7 @@ export const chatSocketHandler = (io) => {
       try {
         const userId = socket.userId;
 
-        /* 1️⃣ Save user message */
+        /* 1️⃣ USER MESSAGE SAVE */
         const emotion = detectEmotion(text);
 
         const userMsg = await Message.create({
@@ -58,10 +49,9 @@ export const chatSocketHandler = (io) => {
           userId,
           role: "user",
           text,
-          emotion, // 🔥 store detected emotion
+          emotion,
         });
 
-        // Set session title from first message
         const session = await Session.findById(sessionId);
         if (session.title === "New Session") {
           await Session.findByIdAndUpdate(sessionId, {
@@ -79,10 +69,8 @@ export const chatSocketHandler = (io) => {
           lastMessageAt: new Date(),
         });
 
-        /* 🚨 2️⃣ SAFETY CHECK */
-        const isCrisis = detectCrisis(text);
-
-        if (isCrisis) {
+        /* 🚨 2️⃣ CRISIS CHECK (UNCHANGED) */
+        if (detectCrisis(text)) {
           const aiMsg = await Message.create({
             sessionId,
             userId,
@@ -96,65 +84,50 @@ export const chatSocketHandler = (io) => {
             sessionId,
             isSafety: true,
           });
-
-          return; // STOP normal AI reply
+          return;
         }
 
-        /* 3️⃣ AI typing indicator */
+        /* 3️⃣ TYPING */
         socket.emit("ai_typing", { sessionId });
 
-        /* 4️⃣ Emotional State (Adaptive Engine) */
+        /* 4️⃣ EMOTIONAL STATE SIGNALS */
         const profile = await getRecentEmotionalProfile(userId);
         const trendData = await getEmotionalTrend(userId);
         const volatilityData = await getEmotionalVolatility(userId);
 
-        // sanitize responses from insight services
-        const safeProfile =
-          profile && profile.percentages ? profile : { percentages: {} };
-        const safeTrend =
-          trendData && trendData.trend ? trendData.trend : "stable";
+        const safeProfile = profile?.percentages || {};
+        const safeTrend = trendData?.trend || "stable";
 
-        // volatility: prefer raw "changes" (integer). Normalize to a simple low/medium/high scale.
         const rawVol =
-          typeof (volatilityData && volatilityData.volatility) === "number"
+          typeof volatilityData?.volatility === "number"
             ? volatilityData.volatility
             : 0;
 
-        // map rawVol → level. Adjust thresholds after you collect real telemetry.
         let volatilityLevel = "low";
-        if (rawVol >= 7)
-          volatilityLevel = "high"; // many shifts in a short history
+        if (rawVol >= 7) volatilityLevel = "high";
         else if (rawVol >= 3) volatilityLevel = "medium";
 
-        // Determine dominant emotion: prefer profile top, else fallback to current message emotion, else neutral.
         const dominantEmotion =
-          Object.entries(safeProfile.percentages).sort(
-            (a, b) => b[1] - a[1],
-          )[0]?.[0] ||
-          emotion || // fallback to the emotion detected from the current text
+          Object.entries(safeProfile).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+          emotion ||
           "neutral";
 
-        // debug log (remove or turn off in production)
-        console.log("Intervention inputs:", {
+        /* 🔥 5️⃣ INTERVENTION SELECTION */
+        const intervention = getIntervention({
+          currentEmotion: emotion,
           dominantEmotion,
-          profile: safeProfile.percentages,
           trend: safeTrend,
-          rawVol,
           volatilityLevel,
         });
 
-        // now call your mode function with safe inputs
+        /* 6️⃣ THERAPIST MODE */
         const mode = getTherapistMode(
           { dominantEmotion },
           safeTrend,
           volatilityLevel,
         );
 
-        // console.log(
-        //   "Therapist Mode:",
-        //   dominantEmotion
-        // );
-        /* 5️⃣ Build conversation memory */
+        /* 7️⃣ MEMORY */
         const history = await Message.find({ sessionId })
           .sort({ createdAt: -1 })
           .limit(12);
@@ -164,28 +137,29 @@ export const chatSocketHandler = (io) => {
           parts: [{ text: m.text }],
         }));
 
-        /* 6️⃣ Build Adaptive Prompt */
+        /* 8️⃣ PROMPT BUILD */
         const modelMessages = buildTherapistPrompt(mode, orderedHistory);
 
-        /* 7️⃣ Generate AI reply */
+        /* 9️⃣ AI REPLY */
         const aiText = await generateAIResponse(modelMessages);
-        /* 8️⃣ Save AI message */
+
+        /* 🔟 SAVE AI MESSAGE WITH INTERVENTION */
         const aiMsg = await Message.create({
           sessionId,
           userId,
           role: "ai",
           text: aiText || "I'm here with you. Could you tell me more?",
+          intervention, // 🔥 stored
         });
 
-        /* 9️⃣ Update session activity */
         await Session.findByIdAndUpdate(sessionId, {
           lastMessageAt: new Date(),
         });
 
-        /* 🔟 Emit AI message */
         socket.emit("ai_message", {
           ...aiMsg.toObject(),
           sessionId,
+          intervention, // 🔥 sent to frontend
         });
       } catch (err) {
         console.error("send_message error:", err);

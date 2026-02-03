@@ -1,5 +1,6 @@
 import RiskLevelBadge from "../safety/RiskLevelBadge";
 import { emotionColors } from "../../utils/emotionColors";
+import InterventionCard from "../intervention/InterventionCard";
 
 export default function MessageBubble({ message }) {
   const isUser = message.role === "user";
@@ -28,7 +29,9 @@ export default function MessageBubble({ message }) {
 
         {/* 💬 Message Text */}
         <div style={{ marginBottom: 6 }}>{message.text}</div>
-
+        {!isUser && message.intervention && (
+          <InterventionCard intervention={message.intervention} />
+        )}
         {/* 🎭 Emotion Badge (User only) */}
         {isUser && message.emotion && (
           <span
