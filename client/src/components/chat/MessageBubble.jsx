@@ -1,16 +1,22 @@
 import RiskLevelBadge from "../safety/RiskLevelBadge";
 import { emotionColors } from "../../utils/emotionColors";
 import InterventionCard from "../intervention/InterventionCard";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { formatAIResponse } from "../../utils/formatAIResponse";
 
 export default function MessageBubble({ message }) {
   const isUser = message.role === "user";
   const emotionStyle = emotionColors[message.emotion] || emotionColors.neutral;
+
+  const formattedText = formatAIResponse(message.text);
+
   return (
     <div
       style={{
         display: "flex",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        marginBottom: 14, // more spacing
+        marginBottom: 14,
       }}
     >
       <div
@@ -19,7 +25,8 @@ export default function MessageBubble({ message }) {
           padding: 12,
           borderRadius: 8,
           maxWidth: "70%",
-          lineHeight: 1.5,
+          lineHeight: 1.6,
+          fontSize: 15,
         }}
       >
         {/* 🚨 Safety Badge (AI only) */}
@@ -27,11 +34,31 @@ export default function MessageBubble({ message }) {
           <RiskLevelBadge isSafety={message.isSafety} />
         )}
 
-        {/* 💬 Message Text */}
-        <div style={{ marginBottom: 6 }}>{message.text}</div>
+        {/* 💬 Formatted AI / User Text */}
+        <div style={{ marginBottom: 6 }}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ children }) => (
+                <p style={{ marginBottom: 10 }}>{children}</p>
+              ),
+              li: ({ children }) => (
+                <li style={{ marginBottom: 6 }}>{children}</li>
+              ),
+              strong: ({ children }) => (
+                <strong style={{ fontWeight: 600 }}>{children}</strong>
+              ),
+            }}
+          >
+            {formattedText}
+          </ReactMarkdown>
+        </div>
+
+        {/* 🧘 Intervention UI */}
         {!isUser && message.intervention && (
           <InterventionCard intervention={message.intervention} />
         )}
+
         {/* 🎭 Emotion Badge (User only) */}
         {isUser && message.emotion && (
           <span
