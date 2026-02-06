@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Home from "../pages/Home";
 import Chat from "../pages/Chat";
 import Insights from "../pages/Insights";
+import Breathing from "../pages/Breathing";
 import ProtectedRoute from "../middleware/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -36,6 +37,15 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <Insights />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/breathing"
+          element={
+            <ProtectedRoute>
+              <Breathing />
             </ProtectedRoute>
           }
         />

@@ -21,6 +21,7 @@ export default function Home() {
       <button onClick={logout}>Logout</button>
       <Link to="/chat">Go to Chat</Link>
       <Link to="/insights">Go to Insights</Link>
+      <Link to="/breathing">Go to Breathing Exercise</Link>
     </div>
   );
 }
