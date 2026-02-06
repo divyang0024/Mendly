@@ -22,6 +22,7 @@ export default function Home() {
       <Link to="/chat">Go to Chat</Link>
       <Link to="/insights">Go to Insights</Link>
       <Link to="/breathing">Go to Breathing Exercise</Link>
+      <Link to="/grounding">Go to Grounding Exercise</Link>
     </div>
   );
 }

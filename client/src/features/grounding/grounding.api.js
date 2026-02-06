@@ -1,0 +1,6 @@
+import api from "../../services/axios";
+
+export const completeGroundingSession = (data) =>
+  api.post("/api/v1/grounding/complete", data);
+
+export const getGroundingStats = () => api.get("/api/v1/grounding/stats");
