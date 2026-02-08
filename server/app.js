@@ -10,6 +10,7 @@ import breathingRoutes from "./routes/breathing.routes.js";
 import groundingRoutes from "./routes/grounding.routes.js";
 import reframingRoutes from "./routes/reframing.routes.js";
 import affirmationRoutes from "./routes/affirmation.routes.js";
+import activationRoutes from "./routes/activation.routes.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/v1/breathing", breathingRoutes);
 app.use("/api/v1/grounding", groundingRoutes);
 app.use("/api/v1/reframing", reframingRoutes);
 app.use("/api/v1/affirmation", affirmationRoutes);
+app.use("/api/v1/activation", activationRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");

@@ -60,26 +60,24 @@ export const saveAffirmationSession = async (req, res) => {
 =============================== */
 export const getAffirmationStats = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.user; // keep your existing system
 
-    const stats = await AffirmationSession.aggregate([
-      {
-        $match: {
-          userId:
-            AffirmationSession.collection.conn.base.Types.ObjectId(userId),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          sessions: { $sum: 1 },
-          avgEffectiveness: { $avg: "$effectivenessScore" },
-        },
-      },
-    ]);
+    const sessions = await AffirmationSession.find({ userId });
 
-    res.json(stats[0] || { sessions: 0, avgEffectiveness: 0 });
-  } catch {
+    const total = sessions.length;
+
+    const avgEffectiveness =
+      total === 0
+        ? 0
+        : sessions.reduce((sum, s) => sum + (s.effectivenessScore || 0), 0) /
+          total;
+
+    res.json({
+      sessions: total,
+      avgEffectiveness,
+    });
+  } catch (err) {
+    console.error("Affirmation stats error:", err);
     res.status(500).json({ message: "Stats error" });
   }
 };

@@ -9,6 +9,7 @@ import Grounding from "../pages/Grounding";
 import ReframingPage from "../pages/ReframingPage";
 import AffirmationPage from "../pages/AffirmationPage";
 import ProtectedRoute from "../middleware/ProtectedRoute";
+import ActivationPage from "../pages/ActivationPage";
 
 export default function AppRoutes() {
   return (
@@ -74,6 +75,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <AffirmationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/activation"
+          element={
+            <ProtectedRoute>
+              <ActivationPage />
             </ProtectedRoute>
           }
         />
