@@ -7,6 +7,7 @@ import Insights from "../pages/Insights";
 import Breathing from "../pages/Breathing";
 import Grounding from "../pages/Grounding";
 import ReframingPage from "../pages/ReframingPage";
+import AffirmationPage from "../pages/AffirmationPage";
 import ProtectedRoute from "../middleware/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -65,6 +66,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <ReframingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/affirmation"
+          element={
+            <ProtectedRoute>
+              <AffirmationPage />
             </ProtectedRoute>
           }
         />
