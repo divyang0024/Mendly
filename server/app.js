@@ -8,6 +8,7 @@ import sessionRoutes from "./routes/session.routes.js";
 import insightRoutes from "./routes/insights.routes.js";
 import breathingRoutes from "./routes/breathing.routes.js";
 import groundingRoutes from "./routes/grounding.routes.js";
+import reframingRoutes from "./routes/reframing.routes.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api/v1/sessions", sessionRoutes);
 app.use("/api/v1/insights", insightRoutes);
 app.use("/api/v1/breathing", breathingRoutes);
 app.use("/api/v1/grounding", groundingRoutes);
+app.use("/api/v1/reframing", reframingRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");

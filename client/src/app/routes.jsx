@@ -6,6 +6,7 @@ import Chat from "../pages/Chat";
 import Insights from "../pages/Insights";
 import Breathing from "../pages/Breathing";
 import Grounding from "../pages/Grounding";
+import ReframingPage from "../pages/ReframingPage";
 import ProtectedRoute from "../middleware/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -56,6 +57,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <Grounding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reframing"
+          element={
+            <ProtectedRoute>
+              <ReframingPage />
             </ProtectedRoute>
           }
         />
