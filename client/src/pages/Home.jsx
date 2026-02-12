@@ -26,6 +26,8 @@ export default function Home() {
       <Link to="/reframing">Go to Reframing Exercise</Link>
       <Link to="/affirmation">Go to Affirmation Exercise</Link>
       <Link to="/activation">Go to Activation Exercise</Link>
+      <Link to="/progress">Go to Progress Page</Link>
+      <Link to="/risk">Go to Risk Dashboard</Link>
     </div>
   );
 }

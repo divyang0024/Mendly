@@ -10,6 +10,8 @@ import ReframingPage from "../pages/ReframingPage";
 import AffirmationPage from "../pages/AffirmationPage";
 import ProtectedRoute from "../middleware/ProtectedRoute";
 import ActivationPage from "../pages/ActivationPage";
+import ProgressPage from "../pages/ProgressPage";
+import RiskDashboard from "../pages/RiskDashboard";
 
 export default function AppRoutes() {
   return (
@@ -83,6 +85,22 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <ActivationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/risk"
+          element={
+            <ProtectedRoute>
+              <RiskDashboard />
             </ProtectedRoute>
           }
         />
