@@ -13,6 +13,7 @@ import affirmationRoutes from "./routes/affirmation.routes.js";
 import activationRoutes from "./routes/activation.routes.js";
 import progressRoutes from "./routes/progress.routes.js";
 import riskRoutes from "./routes/risk.routes.js";
+import longtermRoutes from "./routes/longterm.routes.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/v1/affirmation", affirmationRoutes);
 app.use("/api/v1/activation", activationRoutes);
 app.use("/api/v1/progress", progressRoutes);
 app.use("/api/v1/risk", riskRoutes);
+app.use("/api/v1/longterm", longtermRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");

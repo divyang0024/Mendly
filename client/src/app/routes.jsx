@@ -12,6 +12,7 @@ import ProtectedRoute from "../middleware/ProtectedRoute";
 import ActivationPage from "../pages/ActivationPage";
 import ProgressPage from "../pages/ProgressPage";
 import RiskDashboard from "../pages/RiskDashboard";
+import LongTermPage from "../pages/LongTermPage";
 
 export default function AppRoutes() {
   return (
@@ -101,6 +102,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <RiskDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/longterm"
+          element={
+            <ProtectedRoute>
+              <LongTermPage />
             </ProtectedRoute>
           }
         />
