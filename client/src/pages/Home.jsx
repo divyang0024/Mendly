@@ -39,6 +39,8 @@ export default function Home() {
       <Link to="/risk">Go to Risk Dashboard</Link>
       <br />
       <Link to="/longterm">Go to Long-Term Insights</Link>
+      <br />
+      <Link to="/weekly-report">Go to Weekly Report</Link>
     </div>
   );
 }
