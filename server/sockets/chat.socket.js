@@ -9,6 +9,7 @@ import { buildTherapistPrompt } from "../services/therapistEngine.service.js";
 
 import { analyzeMentalState } from "../services/ai/mentalState.service.js";
 import { validateMentalState } from "../utils/mentalStateValidator.js";
+import { logRiskEvent } from "../services/riskEventLogger.service.js";
 
 /**
  * chatSocketHandler(io)
@@ -77,6 +78,33 @@ export const chatSocketHandler = (io) => {
           therapistMode,
           intervention,
         });
+
+        /* ==============================
+   RISK EVENT LOGGING
+============================== */
+
+        let riskLevel = "low";
+
+        if (crisis) riskLevel = "crisis";
+        else if (intervention === "grounding" || intervention === "breathing")
+          riskLevel = "high";
+        else if (
+          emotion === "sad" ||
+          emotion === "angry" ||
+          emotion === "anxious"
+        )
+          riskLevel = "moderate";
+
+        await logRiskEvent({
+          userId,
+          sessionId,
+          source: "chat",
+          level: riskLevel,
+          emotion,
+          text,
+          intervention,
+        });
+
         // 2) Save the user message (include emotion if present)
         const userMsg = await Message.create({
           sessionId,
