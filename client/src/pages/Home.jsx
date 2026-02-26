@@ -41,6 +41,8 @@ export default function Home() {
       <Link to="/longterm">Go to Long-Term Insights</Link>
       <br />
       <Link to="/weekly-report">Go to Weekly Report</Link>
+      <br />
+      <Link to="/daily-checkin">Go to Daily Check-in</Link>
     </div>
   );
 }

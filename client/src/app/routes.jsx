@@ -14,6 +14,7 @@ import ProgressPage from "../pages/ProgressPage";
 import RiskDashboard from "../pages/RiskDashboard";
 import LongTermPage from "../pages/LongTermPage";
 import WeeklyReportPage from "../pages/WeeklyReportPage";
+import DailyCheckinPage from "../pages/DailyCheckinPage";
 
 export default function AppRoutes() {
   return (
@@ -120,6 +121,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <WeeklyReportPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/daily-checkin"
+          element={
+            <ProtectedRoute>
+              <DailyCheckinPage />
             </ProtectedRoute>
           }
         />

@@ -4,6 +4,7 @@ import WeeklyReport from "../components/insights/WeeklyReport";
 import TrendCard from "../components/insights/TrendCard";
 import VolatilityCard from "../components/insights/VolatilityCard";
 import ProfileCard from "../components/insights/ProfileCard";
+import CheckinHeatmap from "../components/checkin/CheckinHeatmap";
 
 export default function Insights() {
   return (
@@ -15,6 +16,7 @@ export default function Insights() {
       <WeeklyReport />
       <TrendCard />
       <VolatilityCard />
+      <CheckinHeatmap />
     </div>
   );
 }

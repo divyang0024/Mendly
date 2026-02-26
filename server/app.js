@@ -15,7 +15,7 @@ import progressRoutes from "./routes/progress.routes.js";
 import riskRoutes from "./routes/risk.routes.js";
 import longtermRoutes from "./routes/longterm.routes.js";
 import weeklyReportRoutes from "./routes/weeklyReport.routes.js";
-
+import checkinRoutes from "./routes/dailyCheckin.routes.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
@@ -44,6 +44,7 @@ app.use("/api/v1/progress", progressRoutes);
 app.use("/api/v1/risk", riskRoutes);
 app.use("/api/v1/longterm", longtermRoutes);
 app.use("/api/v1/reports", weeklyReportRoutes);
+app.use("/api/v1/checkin", checkinRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Therapist API running...");
