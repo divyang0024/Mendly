@@ -1,19 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
-
 import { getCheckinHeatmap } from "../../features/checkin/checkin.api";
 
-/* ───────────────────────────────────────────────────────────────
-   EMOTIONAL HEATMAP — refined dark wellness aesthetic
-   ─────────────────────────────────────────────────────────────── */
-
+/* ── Brand-mapped intensity levels (light theme) ── */
 const INTENSITY_META = [
-  { max: 0, label: "No data", emoji: "—", color: "#1f2235" },
-  { max: 2, label: "Calm", emoji: "🌊", color: "#1b3a4b" },
-  { max: 4, label: "Mild", emoji: "🍃", color: "#1a6b5a" },
-  { max: 7, label: "Moderate", emoji: "🔥", color: "#d4a03c" },
-  { max: 10, label: "Intense", emoji: "⚡", color: "#c0392b" },
+  { max: 0, label: "No data", emoji: "—", color: "#E2E3D8" }, // surface-container-highest
+  { max: 2, label: "Calm", emoji: "🌿", color: "#CDEDA3" }, // primary-container
+  { max: 4, label: "Mild", emoji: "🌊", color: "#4C662B" }, // primary
+  { max: 7, label: "Moderate", emoji: "🌤", color: "#A16207" }, // amber
+  { max: 10, label: "Intense", emoji: "🔥", color: "#BA1A1A" }, // error
 ];
 
 function getMeta(count) {
@@ -26,6 +22,7 @@ export default function CheckinHeatmap() {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
 
+  /* ── Original logic — unchanged ── */
   useEffect(() => {
     const load = async () => {
       const res = await getCheckinHeatmap();
@@ -42,7 +39,6 @@ export default function CheckinHeatmap() {
   const startDate = new Date();
   startDate.setDate(today.getDate() - 90);
 
-  /* ── derived stats ── */
   const valuesMap = useMemo(() => {
     const m = {};
     values.forEach((v) => (m[v.date] = v.count));
@@ -56,7 +52,6 @@ export default function CheckinHeatmap() {
       ? (filled.reduce((s, v) => s + v.count, 0) / total).toFixed(1)
       : "0";
     const peak = total ? Math.max(...filled.map((v) => v.count)) : 0;
-
     let streak = 0;
     const d = new Date(today);
     while (true) {
@@ -81,244 +76,135 @@ export default function CheckinHeatmap() {
       day: "numeric",
     });
   };
+  /* ── End original logic ── */
 
   return (
-    <div className="checkin-heatmap-root">
+    <div className="chm-root">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
-        .checkin-heatmap-root {
-          --hm-bg: #0f1019;
-          --hm-card: #161825;
-          --hm-card-raised: #1c1f30;
-          --hm-border: #262940;
-          --hm-border-hover: #3a3f5c;
-          --hm-text: #b8bdd6;
-          --hm-text-muted: #5d6180;
-          --hm-text-bright: #eaecf6;
-          --hm-accent: #1a6b5a;
-          --hm-accent-glow: rgba(26, 107, 90, 0.12);
-          --hm-empty: #1f2235;
-          --hm-scale-1: #1b3a4b;
-          --hm-scale-2: #1a6b5a;
-          --hm-scale-3: #d4a03c;
-          --hm-scale-4: #c0392b;
-
-          font-family: 'Outfit', sans-serif;
-          background: var(--hm-card);
-          border: 1px solid var(--hm-border);
-          border-radius: 18px;
-          padding: 1.75rem;
-          color: var(--hm-text);
-          animation: hm-fadeUp 0.5s ease both;
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+        :root{
+          --primary:#4C662B;--primary-container:#CDEDA3;--on-primary-container:#354E16;
+          --secondary:#586249;--secondary-container:#DCE7C8;--on-secondary-container:#404A33;
+          --tertiary:#386663;--tertiary-container:#BCECE7;--on-tertiary-container:#1F4E4B;
+          --on-surface:#1A1C16;--on-surface-variant:#44483D;--outline:#75796C;--outline-variant:#C5C8BA;
+          --surface-container-low:#F3F4E9;--surface-container:#EEEFE3;
+          --surface-container-high:#E8E9DE;--surface-container-highest:#E2E3D8;
+          --inverse-primary:#B1D18A;
         }
 
-        @keyframes hm-fadeUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
+        .chm-root {
+          font-family:'DM Sans',sans-serif;
+          background:var(--surface-container-low);
+          border:1.5px solid var(--outline-variant);
+          border-radius:20px;
+          overflow:hidden;
+          position:relative;
+          box-shadow:0 1px 12px rgba(26,28,22,0.07),0 4px 24px rgba(26,28,22,0.04);
+          color:var(--on-surface);
+          animation:chmFadeUp 0.45s ease-out both;
         }
+        @keyframes chmFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .chm-root::before{content:'';position:absolute;top:-45px;right:-45px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(76,102,43,0.07) 0%,transparent 70%);pointer-events:none;}
 
-        /* ── Header ── */
-        .hm-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          margin-bottom: 1.5rem;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-        .hm-title-group { display: flex; flex-direction: column; gap: 4px; }
-        .hm-title {
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: var(--hm-text-bright);
-          letter-spacing: -0.01em;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .hm-title::before {
-          content: '';
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          background: var(--hm-accent);
-          box-shadow: 0 0 10px var(--hm-accent), 0 0 20px var(--hm-accent-glow);
-          animation: hm-pulse 2.5s ease-in-out infinite;
-        }
-        @keyframes hm-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        .hm-subtitle {
-          font-size: 0.78rem;
-          color: var(--hm-text-muted);
-          padding-left: 16px;
-        }
+        /* Header */
+        .chm-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--outline-variant);background:var(--surface-container);}
+        .chm-header-left{display:flex;align-items:center;gap:10px;}
+        .chm-icon{width:30px;height:30px;border-radius:9px;background:var(--primary-container);color:var(--on-primary-container);display:grid;place-items:center;}
+        .chm-icon svg{width:14px;height:14px;}
+        .chm-title-group{display:flex;flex-direction:column;gap:2px;}
+        .chm-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;color:var(--on-surface);display:flex;align-items:center;gap:7px;}
+        .chm-pulse{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:chmPulse 2.5s ease-in-out infinite;}
+        @keyframes chmPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+        .chm-subtitle{font-size:12px;color:var(--outline);font-weight:300;padding-left:1px;}
 
-        /* ── Stats Row ── */
-        .hm-stats {
-          display: flex;
-          gap: 6px;
-        }
-        .hm-stat {
-          background: var(--hm-card-raised);
-          border: 1px solid var(--hm-border);
-          border-radius: 10px;
-          padding: 8px 14px;
-          text-align: center;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          min-width: 70px;
-        }
-        .hm-stat:hover {
-          border-color: var(--hm-border-hover);
-          box-shadow: 0 0 20px var(--hm-accent-glow);
-        }
-        .hm-stat-value {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 1.1rem;
-          font-weight: 500;
-          color: var(--hm-text-bright);
-          line-height: 1.2;
-        }
-        .hm-stat-label {
-          font-size: 0.65rem;
-          color: var(--hm-text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin-top: 2px;
-        }
+        /* Stats row */
+        .chm-stats{display:flex;gap:6px;}
+        .chm-stat{background:var(--surface-container-high);border:1px solid var(--outline-variant);border-radius:10px;padding:7px 13px;text-align:center;min-width:62px;transition:border-color 0.2s,box-shadow 0.2s;}
+        .chm-stat:hover{border-color:rgba(76,102,43,0.35);box-shadow:0 2px 10px rgba(76,102,43,0.08);}
+        .chm-stat-value{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--on-surface);line-height:1.2;}
+        .chm-stat-label{font-size:10px;color:var(--outline);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
 
-        /* ── Heatmap Grid Override ── */
-        .hm-grid-wrapper {
-          background: var(--hm-bg);
-          border: 1px solid var(--hm-border);
-          border-radius: 12px;
-          padding: 1rem 1rem 0.75rem;
-          overflow-x: auto;
-        }
-        .hm-grid-wrapper .react-calendar-heatmap {
-          width: 100%;
-        }
-        .hm-grid-wrapper .react-calendar-heatmap text {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 9px;
-          fill: var(--hm-text-muted);
-        }
-        .hm-grid-wrapper .react-calendar-heatmap rect {
-          rx: 3;
-          ry: 3;
-          stroke: transparent;
-          stroke-width: 1.5;
-          transition: stroke 0.15s, filter 0.15s;
-          cursor: pointer;
-        }
-        .hm-grid-wrapper .react-calendar-heatmap rect:hover {
-          stroke: var(--hm-text-bright);
-          filter: brightness(1.3);
-        }
+        /* Grid wrapper */
+        .chm-grid-wrap{background:var(--surface-container);border-top:0;border-bottom:1px solid var(--outline-variant);padding:16px 18px 12px;overflow-x:auto;position:relative;z-index:1;}
+        .chm-grid-wrap .react-calendar-heatmap{width:100%;}
+        .chm-grid-wrap .react-calendar-heatmap text{font-family:'DM Sans',sans-serif;font-size:9px;fill:var(--outline);}
+        .chm-grid-wrap .react-calendar-heatmap rect{rx:3;ry:3;stroke:transparent;stroke-width:1.5;cursor:pointer;transition:stroke 0.15s,filter 0.15s;}
+        .chm-grid-wrap .react-calendar-heatmap rect:hover{stroke:var(--primary);filter:brightness(1.08);}
 
-        .hm-grid-wrapper .color-empty   { fill: var(--hm-empty); }
-        .hm-grid-wrapper .color-scale-1  { fill: var(--hm-scale-1); }
-        .hm-grid-wrapper .color-scale-2  { fill: var(--hm-scale-2); }
-        .hm-grid-wrapper .color-scale-3  { fill: var(--hm-scale-3); }
-        .hm-grid-wrapper .color-scale-4  { fill: var(--hm-scale-4); }
+        /* Heatmap color classes — brand palette */
+        .chm-grid-wrap .color-empty    { fill: #E2E3D8; }
+        .chm-grid-wrap .color-scale-1  { fill: #CDEDA3; }
+        .chm-grid-wrap .color-scale-2  { fill: #4C662B; }
+        .chm-grid-wrap .color-scale-3  { fill: #A16207; }
+        .chm-grid-wrap .color-scale-4  { fill: #BA1A1A; }
 
-        /* ── Footer: Legend + Detail Pill ── */
-        .hm-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-top: 1rem;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-        .hm-legend {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 0.7rem;
-          color: var(--hm-text-muted);
-        }
-        .hm-legend-swatch {
-          width: 14px; height: 14px;
-          border-radius: 3px;
-          transition: transform 0.15s;
-          cursor: default;
-        }
-        .hm-legend-swatch:hover { transform: scale(1.35); }
+        /* Footer */
+        .chm-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:12px;flex-wrap:wrap;}
+        .chm-legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--outline);}
+        .chm-swatch{width:13px;height:13px;border-radius:3px;cursor:default;transition:transform 0.15s;}
+        .chm-swatch:hover{transform:scale(1.4);}
 
-        .hm-detail-pill {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: var(--hm-card-raised);
-          border: 1px solid var(--hm-border);
-          border-radius: 10px;
-          padding: 6px 14px;
-          font-size: 0.78rem;
-          color: var(--hm-text);
-          animation: hm-pillIn 0.2s ease;
-          white-space: nowrap;
-        }
-        @keyframes hm-pillIn {
-          from { opacity: 0; transform: translateX(6px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .hm-detail-emoji { font-size: 1rem; }
-        .hm-detail-date {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.7rem;
-          color: var(--hm-text-muted);
-        }
-        .hm-detail-label {
-          font-weight: 500;
-          color: var(--hm-text-bright);
-        }
-        .hm-detail-count {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.72rem;
-          opacity: 0.6;
-        }
+        /* Detail pill */
+        .chm-pill{display:flex;align-items:center;gap:8px;background:var(--surface-container-high);border:1.5px solid var(--outline-variant);border-radius:10px;padding:7px 14px;font-size:12.5px;color:var(--on-surface);animation:chmPillIn 0.2s ease;white-space:nowrap;}
+        @keyframes chmPillIn{from{opacity:0;transform:translateX(6px)}to{opacity:1;transform:translateX(0)}}
+        .chm-pill-emoji{font-size:15px;}
+        .chm-pill-date{font-size:11px;color:var(--outline);}
+        .chm-pill-label{font-weight:500;color:var(--on-surface);}
+        .chm-pill-count{font-size:11px;color:var(--outline);}
 
-        /* ── Responsive ── */
-        @media (max-width: 520px) {
-          .checkin-heatmap-root { padding: 1.15rem; }
-          .hm-header { flex-direction: column; }
-          .hm-stats { width: 100%; }
-          .hm-stat { flex: 1; padding: 6px 8px; min-width: 0; }
-          .hm-stat-value { font-size: 0.95rem; }
-          .hm-footer { flex-direction: column; align-items: flex-start; }
+        @media(max-width:520px){
+          .chm-header{flex-direction:column;}
+          .chm-stats{width:100%;}
+          .chm-stat{flex:1;padding:6px 8px;min-width:0;}
+          .chm-footer{flex-direction:column;align-items:flex-start;}
         }
       `}</style>
 
-      {/* ── Header ── */}
-      <div className="hm-header">
-        <div className="hm-title-group">
-          <div className="hm-title">Emotional Heatmap</div>
-          <div className="hm-subtitle">Last 90 days of check-in intensity</div>
+      {/* Header */}
+      <div className="chm-header">
+        <div className="chm-header-left">
+          <div className="chm-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </div>
+          <div className="chm-title-group">
+            <div className="chm-title">
+              <span className="chm-pulse" />
+              Emotional Heatmap
+            </div>
+            <div className="chm-subtitle">
+              Last 90 days of check-in intensity
+            </div>
+          </div>
         </div>
-        <div className="hm-stats">
-          <div className="hm-stat">
-            <div className="hm-stat-value">{stats.total}</div>
-            <div className="hm-stat-label">Days</div>
-          </div>
-          <div className="hm-stat">
-            <div className="hm-stat-value">{stats.avg}</div>
-            <div className="hm-stat-label">Avg</div>
-          </div>
-          <div className="hm-stat">
-            <div className="hm-stat-value">{stats.streak}</div>
-            <div className="hm-stat-label">Streak</div>
-          </div>
-          <div className="hm-stat">
-            <div className="hm-stat-value">{stats.peak}</div>
-            <div className="hm-stat-label">Peak</div>
-          </div>
+        <div className="chm-stats">
+          {[
+            { v: stats.total, l: "Days" },
+            { v: stats.avg, l: "Avg" },
+            { v: stats.streak, l: "Streak" },
+            { v: stats.peak, l: "Peak" },
+          ].map(({ v, l }) => (
+            <div key={l} className="chm-stat">
+              <div className="chm-stat-value">{v}</div>
+              <div className="chm-stat-label">{l}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── Heatmap Grid ── */}
-      <div className="hm-grid-wrapper">
+      {/* Grid */}
+      <div className="chm-grid-wrap">
         <CalendarHeatmap
           startDate={startDate}
           endDate={today}
@@ -332,9 +218,7 @@ export default function CheckinHeatmap() {
           }}
           tooltipDataAttrs={(value) => {
             if (!value || !value.date) return { "data-tip": "No data" };
-            return {
-              "data-tip": `${value.date} → Intensity ${value.count}`,
-            };
+            return { "data-tip": `${value.date} → Intensity ${value.count}` };
           }}
           onClick={(value) => {
             if (value) setSelectedDay(value);
@@ -347,33 +231,27 @@ export default function CheckinHeatmap() {
         />
       </div>
 
-      {/* ── Footer ── */}
-      <div className="hm-footer">
-        <div className="hm-legend">
+      {/* Footer */}
+      <div className="chm-footer">
+        <div className="chm-legend">
           <span>Less</span>
-          {[
-            "var(--hm-empty)",
-            "var(--hm-scale-1)",
-            "var(--hm-scale-2)",
-            "var(--hm-scale-3)",
-            "var(--hm-scale-4)",
-          ].map((c, i) => (
+          {INTENSITY_META.map((m, i) => (
             <div
               key={i}
-              className="hm-legend-swatch"
-              style={{ background: c }}
-              title={INTENSITY_META[i]?.label}
+              className="chm-swatch"
+              style={{ background: m.color }}
+              title={m.label}
             />
           ))}
           <span>More</span>
         </div>
 
         {activeDay && activeMeta && activeDay.date && (
-          <div className="hm-detail-pill" key={activeDay.date}>
-            <span className="hm-detail-emoji">{activeMeta.emoji}</span>
-            <span className="hm-detail-date">{fmtDate(activeDay.date)}</span>
-            <span className="hm-detail-label">{activeMeta.label}</span>
-            <span className="hm-detail-count">({activeDay.count}/10)</span>
+          <div className="chm-pill" key={activeDay.date}>
+            <span className="chm-pill-emoji">{activeMeta.emoji}</span>
+            <span className="chm-pill-date">{fmtDate(activeDay.date)}</span>
+            <span className="chm-pill-label">{activeMeta.label}</span>
+            <span className="chm-pill-count">({activeDay.count}/10)</span>
           </div>
         )}
       </div>

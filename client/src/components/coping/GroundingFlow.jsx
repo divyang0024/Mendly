@@ -39,45 +39,71 @@ const steps = [
   },
 ];
 
+/* Material-token sense colors — each maps to a tonal variant of the brand palette */
 const senseColors = {
   sight: {
-    bg: "#FFF7ED",
-    ring: "#F59E0B",
-    accent: "#D97706",
-    glow: "rgba(245,158,11,0.25)",
+    bg: "rgba(76,102,43,0.07)",
+    ring: "#4C662B",
+    accent: "#354E16",
+    glow: "rgba(76,102,43,0.2)",
+    chip: "#CDEDA3",
+    chipText: "#354E16",
   },
   touch: {
-    bg: "#FFF1F2",
-    ring: "#F43F5E",
-    accent: "#E11D48",
-    glow: "rgba(244,63,94,0.25)",
+    bg: "rgba(88,98,73,0.07)",
+    ring: "#586249",
+    accent: "#404A33",
+    glow: "rgba(88,98,73,0.2)",
+    chip: "#DCE7C8",
+    chipText: "#404A33",
   },
   hearing: {
-    bg: "#F5F3FF",
-    ring: "#8B5CF6",
-    accent: "#7C3AED",
-    glow: "rgba(139,92,246,0.25)",
+    bg: "rgba(56,102,99,0.07)",
+    ring: "#386663",
+    accent: "#1F4E4B",
+    glow: "rgba(56,102,99,0.2)",
+    chip: "#BCECE7",
+    chipText: "#1F4E4B",
   },
   smell: {
-    bg: "#F0FDF4",
-    ring: "#14B8A6",
-    accent: "#0D9488",
-    glow: "rgba(20,184,166,0.25)",
+    bg: "rgba(76,102,43,0.05)",
+    ring: "#B1D18A",
+    accent: "#4C662B",
+    glow: "rgba(177,209,138,0.25)",
+    chip: "#CDEDA3",
+    chipText: "#354E16",
   },
   taste: {
-    bg: "#F0F9FF",
-    ring: "#0EA5E9",
-    accent: "#0284C7",
-    glow: "rgba(14,165,233,0.25)",
+    bg: "rgba(56,102,99,0.05)",
+    ring: "#BCECE7",
+    accent: "#386663",
+    glow: "rgba(56,102,99,0.18)",
+    chip: "#BCECE7",
+    chipText: "#1F4E4B",
   },
 };
 
-/* ─── Floating Orbs Background ─── */
+/* ── Botanical floating orbs — brand palette variants ── */
 function FloatingOrbs({ phase }) {
   const palettes = {
-    before: ["#a78bfa", "#818cf8", "#c084fc", "#e879f9"],
-    after: ["#34d399", "#2dd4bf", "#4ade80", "#a3e635"],
-    active: ["#fbbf24", "#f472b6", "#a78bfa", "#22d3ee"],
+    before: [
+      "rgba(76,102,43,0.18)",
+      "rgba(88,98,73,0.15)",
+      "rgba(56,102,99,0.12)",
+      "rgba(177,209,138,0.12)",
+    ],
+    after: [
+      "rgba(56,102,99,0.18)",
+      "rgba(76,102,43,0.15)",
+      "rgba(177,209,138,0.15)",
+      "rgba(88,98,73,0.1)",
+    ],
+    active: [
+      "rgba(76,102,43,0.14)",
+      "rgba(56,102,99,0.14)",
+      "rgba(88,98,73,0.12)",
+      "rgba(177,209,138,0.1)",
+    ],
   };
   const colors = palettes[phase] || palettes.active;
   return (
@@ -86,7 +112,7 @@ function FloatingOrbs({ phase }) {
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        borderRadius: 24,
+        borderRadius: 20,
         pointerEvents: "none",
       }}
     >
@@ -95,14 +121,14 @@ function FloatingOrbs({ phase }) {
           key={i}
           style={{
             position: "absolute",
-            width: 100 + i * 40,
-            height: 100 + i * 40,
+            width: 110 + i * 40,
+            height: 110 + i * 40,
             borderRadius: "50%",
-            background: `radial-gradient(circle, ${c}33, transparent 70%)`,
-            top: `${15 + i * 18}%`,
-            left: `${10 + i * 20}%`,
-            animation: `gfOrb${i} ${6 + i * 2}s ease-in-out infinite`,
-            filter: "blur(30px)",
+            background: `radial-gradient(circle, ${c}, transparent 70%)`,
+            top: `${12 + i * 18}%`,
+            left: `${8 + i * 22}%`,
+            animation: `gfOrb${i} ${7 + i * 2}s ease-in-out infinite`,
+            filter: "blur(35px)",
           }}
         />
       ))}
@@ -110,8 +136,8 @@ function FloatingOrbs({ phase }) {
   );
 }
 
-/* ─── Breathing Ring ─── */
-function BreathingRing({ color = "#8B5CF6", size = 110 }) {
+/* ── Botanical breathing ring — uses brand primary ── */
+function BreathingRing({ color = "#4C662B", size = 100 }) {
   return (
     <div
       style={{
@@ -130,11 +156,11 @@ function BreathingRing({ color = "#8B5CF6", size = 110 }) {
             borderRadius: "50%",
             border:
               i < 2
-                ? `${3 - i}px solid ${color}${i === 0 ? "40" : "25"}`
+                ? `${3 - i}px solid ${color}${i === 0 ? "40" : "22"}`
                 : "none",
             background:
               i === 2
-                ? `radial-gradient(circle, ${color}15, transparent)`
+                ? `radial-gradient(circle, ${color}12, transparent)`
                 : "none",
             animation: `gfBreathe 4s ease-in-out infinite ${i * 0.5}s`,
           }}
@@ -144,7 +170,7 @@ function BreathingRing({ color = "#8B5CF6", size = 110 }) {
   );
 }
 
-/* ─── Progress Arc (SVG) ─── */
+/* ── Progress Arc ── */
 function ProgressArc({ current, total, color }) {
   const r = 18,
     circ = 2 * Math.PI * r,
@@ -161,7 +187,7 @@ function ProgressArc({ current, total, color }) {
         cy="22"
         r={r}
         fill="none"
-        stroke="#e5e7eb"
+        stroke="var(--outline-variant)"
         strokeWidth="3"
       />
       <circle
@@ -180,31 +206,32 @@ function ProgressArc({ current, total, color }) {
   );
 }
 
-/* ─── Chip Tag ─── */
-function Chip({ text, color, index }) {
+/* ── Response Chip — brand token style ── */
+function Chip({ text, sc, index }) {
   return (
     <span
       style={{
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        padding: "6px 14px",
-        borderRadius: 999,
-        background: `${color}18`,
-        border: `1px solid ${color}35`,
-        color,
+        padding: "5px 13px",
+        borderRadius: 100,
+        background: sc.chip,
+        border: `1px solid ${sc.ring}30`,
+        color: sc.chipText,
         fontSize: 13,
         fontWeight: 500,
+        fontFamily: "'DM Sans', sans-serif",
         animation: `gfChipIn 0.35s cubic-bezier(.34,1.56,.64,1) ${index * 0.06}s both`,
       }}
     >
       <span
         style={{
-          width: 6,
-          height: 6,
+          width: 5,
+          height: 5,
           borderRadius: "50%",
-          background: color,
-          opacity: 0.7,
+          background: sc.accent,
+          opacity: 0.8,
         }}
       />
       {text}
@@ -212,34 +239,45 @@ function Chip({ text, color, index }) {
   );
 }
 
-/* ─── Keyframes (injected once) ─── */
+/* ── Keyframes injected once ── */
 const GF_STYLE_ID = "grounding-flow-keyframes";
 function injectKeyframes() {
   if (document.getElementById(GF_STYLE_ID)) return;
   const style = document.createElement("style");
   style.id = GF_STYLE_ID;
   style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap');
-    @keyframes gfOrb0{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.15)}}
-    @keyframes gfOrb1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-25px,25px) scale(1.1)}}
-    @keyframes gfOrb2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,30px) scale(1.2)}}
-    @keyframes gfOrb3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,-15px) scale(1.05)}}
-    @keyframes gfBreathe{0%,100%{transform:scale(1);opacity:0.6}50%{transform:scale(1.12);opacity:1}}
-    @keyframes gfFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes gfChipIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
-    @keyframes gfPulseGlow{0%,100%{box-shadow:0 0 20px var(--gf-glow)}50%{box-shadow:0 0 40px var(--gf-glow)}}
-    @keyframes gfCompletePop{0%{transform:scale(0.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root {
+      --primary: #4C662B; --primary-container: #CDEDA3; --on-primary: #FFFFFF; --on-primary-container: #354E16;
+      --secondary: #586249; --secondary-container: #DCE7C8; --on-secondary-container: #404A33;
+      --tertiary: #386663; --tertiary-container: #BCECE7; --on-tertiary-container: #1F4E4B;
+      --error: #BA1A1A; --error-container: #FFDAD6; --on-error-container: #93000A;
+      --background: #F9FAEF; --on-background: #1A1C16; --on-surface: #1A1C16; --on-surface-variant: #44483D;
+      --outline: #75796C; --outline-variant: #C5C8BA;
+      --surface-container-low: #F3F4E9; --surface-container: #EEEFE3; --surface-container-high: #E8E9DE;
+      --surface-container-highest: #E2E3D8; --inverse-primary: #B1D18A;
+    }
+    @keyframes gfOrb0{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-18px) scale(1.15)}}
+    @keyframes gfOrb1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-22px,22px) scale(1.1)}}
+    @keyframes gfOrb2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,28px) scale(1.2)}}
+    @keyframes gfOrb3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-28px,-12px) scale(1.05)}}
+    @keyframes gfBreathe{0%,100%{transform:scale(1);opacity:0.55}50%{transform:scale(1.12);opacity:1}}
+    @keyframes gfFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes gfChipIn{from{opacity:0;transform:scale(0.82)}to{opacity:1;transform:scale(1)}}
+    @keyframes gfPulseGlow{0%,100%{box-shadow:0 0 0 0 var(--gf-glow)}50%{box-shadow:0 0 0 8px transparent}}
+    @keyframes gfCompletePop{0%{transform:scale(0.65);opacity:0}60%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
     @keyframes gfConfetti{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-60px) rotate(360deg);opacity:0}}
-    .gf-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;outline:none}
-    .gf-slider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:white;border:3px solid currentColor;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer}
-    .gf-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:white;border:3px solid currentColor;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;border:none}
+    @keyframes gfPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+    .gf-slider{-webkit-appearance:none;appearance:none;height:5px;border-radius:999px;outline:none}
+    .gf-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--background);box-shadow:0 1px 6px rgba(0,0,0,0.12),0 0 0 2.5px currentColor;cursor:pointer}
+    .gf-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--background);box-shadow:0 1px 6px rgba(0,0,0,0.12),0 0 0 2.5px currentColor;cursor:pointer;border:none}
+    .gf-input-wrap:focus-within{border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(76,102,43,0.12) !important;}
   `;
   document.head.appendChild(style);
 }
 
-/* ─── Main Component (all original logic preserved exactly) ─── */
 export default function GroundingFlow({ sessionId = null, onComplete }) {
-  const [step, setStep] = useState(-1); // -1 = BEFORE step
+  const [step, setStep] = useState(-1);
   const [before, setBefore] = useState(5);
   const [after, setAfter] = useState(5);
   const [responses, setResponses] = useState({
@@ -278,7 +316,7 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
 
   const nextStep = () => {
     if (step < steps.length - 1) setStep((s) => s + 1);
-    else setStep(steps.length); // go to AFTER step
+    else setStep(steps.length);
   };
 
   const saveSession = async () => {
@@ -288,7 +326,6 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
       intensityAfter: after,
       ...responses,
     });
-
     if (onComplete) onComplete();
     setStep(steps.length + 1);
   };
@@ -300,43 +337,45 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
   };
 
   const feelingColor = (val) => {
-    if (val <= 3) return "#059669";
-    if (val <= 6) return "#D97706";
-    return "#DC2626";
+    if (val <= 3) return "var(--primary)";
+    if (val <= 6) return "#A16207";
+    return "var(--error)";
   };
   /* ── End original logic ── */
 
   const feelingEmoji = (val) => (val <= 3 ? "🍃" : val <= 6 ? "🌊" : "🔥");
-  const sliderGradient = (val) =>
+  const sliderBg = (val) =>
     val <= 3
-      ? "linear-gradient(90deg,#34d399,#6ee7b7)"
+      ? "linear-gradient(90deg, var(--primary), #B1D18A)"
       : val <= 6
-        ? "linear-gradient(90deg,#fbbf24,#f59e0b)"
-        : "linear-gradient(90deg,#f87171,#ef4444)";
-  const sliderThumbColor = (val) =>
-    val <= 3 ? "#10b981" : val <= 6 ? "#f59e0b" : "#ef4444";
+        ? "linear-gradient(90deg, #92400E, #CA8A04)"
+        : "linear-gradient(90deg, var(--error), #F87171)";
+  const sliderColor = (val) =>
+    val <= 3 ? "var(--primary)" : val <= 6 ? "#CA8A04" : "var(--error)";
 
   const doneSenses = steps.reduce((a, s) => a + responses[s.key].length, 0);
   const phase =
     step === -1 ? "before" : step > steps.length - 1 ? "after" : "active";
 
-  const font = "'DM Sans', sans-serif";
-  const displayFont = "'DM Serif Display', serif";
-
   /* ── Reusable slider block ── */
-  const SliderBlock = ({ value, onChange, thumbColor }) => (
+  const SliderBlock = ({ value, onChange }) => (
     <div style={{ width: "100%" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           alignItems: "baseline",
-          gap: 8,
-          marginBottom: 8,
+          gap: 10,
+          marginBottom: 10,
         }}
       >
         <span
-          style={{ fontSize: 36, fontFamily: displayFont, color: "#1E1B2E" }}
+          style={{
+            fontSize: 38,
+            fontFamily: "'Playfair Display', serif",
+            color: "var(--on-surface)",
+            fontWeight: 400,
+          }}
         >
           {value}
         </span>
@@ -351,17 +390,18 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
         className="gf-slider"
         style={{
           width: "100%",
-          background: sliderGradient(value),
-          color: thumbColor || sliderThumbColor(value),
+          background: sliderBg(value),
+          color: sliderColor(value),
         }}
       />
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          fontSize: 11,
-          color: "#A0A0B8",
-          marginTop: 6,
+          fontSize: 11.5,
+          color: "var(--outline)",
+          marginTop: 7,
+          fontWeight: 400,
         }}
       >
         <span>Calm</span>
@@ -370,8 +410,8 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
       <p
         style={{
           textAlign: "center",
-          fontSize: 14,
-          fontWeight: 600,
+          fontSize: 13.5,
+          fontWeight: 500,
           color: feelingColor(value),
           marginTop: 8,
         }}
@@ -381,84 +421,135 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
     </div>
   );
 
+  /* Card bg — warm surface tones per phase */
+  const cardBg =
+    phase === "before"
+      ? "var(--surface-container-low)"
+      : phase === "after" && step > steps.length
+        ? "var(--surface-container-low)"
+        : phase === "after"
+          ? "var(--surface-container-low)"
+          : sc
+            ? "var(--surface-container-low)"
+            : "var(--surface-container-low)";
+
   return (
     <div
       style={{
         position: "relative",
         maxWidth: 440,
         margin: "0 auto",
-        padding: 32,
-        borderRadius: 24,
-        background:
-          phase === "before"
-            ? "#FAF5FF"
-            : phase === "after"
-              ? step > steps.length
-                ? "#ECFDF5"
-                : "#F0FDF4"
-              : sc?.bg || "#FAFAFA",
-        boxShadow: "0 8px 60px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
-        fontFamily: font,
+        padding: 28,
+        borderRadius: 20,
+        background: cardBg,
+        border: "1.5px solid var(--outline-variant)",
+        boxShadow:
+          "0 1px 12px rgba(26,28,22,0.07), 0 4px 24px rgba(26,28,22,0.04)",
+        fontFamily: "'DM Sans', sans-serif",
         overflow: "hidden",
-        transition: "background 0.6s ease",
+        transition: "background 0.5s ease",
         minHeight: 400,
+        color: "var(--on-surface)",
       }}
     >
+      {/* Botanical floating orbs */}
       <FloatingOrbs phase={phase} />
+
+      {/* Top-right botanical glow — matches app cards */}
+      <div
+        style={{
+          position: "absolute",
+          top: -45,
+          right: -45,
+          width: 140,
+          height: 140,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(76,102,43,0.07) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
 
       <div
         key={fadeKey}
         style={{
           position: "relative",
           zIndex: 1,
-          animation: "gfFadeUp 0.45s ease-out",
+          animation: "gfFadeUp 0.42s ease-out",
         }}
       >
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+        {/* ── Card Header ── */}
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              background: "var(--primary-container)",
+              border: "1px solid rgba(76,102,43,0.2)",
+              borderRadius: 100,
+              padding: "4px 13px 4px 10px",
+              marginBottom: 12,
+              width: "fit-content",
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                background: "var(--primary)",
+                borderRadius: "50%",
+                animation: "gfPulse 2.2s ease-in-out infinite",
+                display: "block",
+              }}
+            />
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.07em",
+                textTransform: "uppercase",
+                color: "var(--on-primary-container)",
+                margin: 0,
+              }}
+            >
+              Grounding Exercise
+            </p>
+          </div>
           <h2
             style={{
-              fontFamily: displayFont,
-              fontSize: 26,
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "1.55rem",
               fontWeight: 400,
-              color: "#1E1B2E",
+              color: "var(--on-surface)",
               margin: 0,
               letterSpacing: "-0.3px",
+              lineHeight: 1.2,
             }}
           >
             5 · 4 · 3 · 2 · 1
           </h2>
-          <p
-            style={{
-              fontSize: 13,
-              color: "#8B8B9E",
-              marginTop: 4,
-              letterSpacing: "0.5px",
-              textTransform: "uppercase",
-            }}
-          >
-            Grounding Exercise
-          </p>
         </div>
 
-        {/* ──────── BEFORE STEP ──────── */}
+        {/* ════ BEFORE STEP ════ */}
         {step === -1 && (
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 24,
+              gap: 22,
             }}
           >
-            <BreathingRing color="#8B5CF6" />
+            <BreathingRing color="var(--primary)" />
             <p
               style={{
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: 500,
-                color: "#3B3355",
+                color: "var(--on-surface)",
                 textAlign: "center",
                 margin: 0,
+                lineHeight: 1.5,
               }}
             >
               How activated do you feel right now?
@@ -468,38 +559,54 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
               onClick={() => setStep(0)}
               style={{
                 width: "100%",
-                padding: "14px 0",
-                borderRadius: 14,
+                padding: "13px 0",
+                borderRadius: 12,
                 border: "none",
-                background: "linear-gradient(135deg, #8B5CF6, #6D28D9)",
-                color: "#fff",
+                background: "var(--primary)",
+                color: "var(--on-primary)",
                 fontSize: 15,
-                fontWeight: 600,
+                fontWeight: 500,
                 cursor: "pointer",
-                fontFamily: font,
-                boxShadow: "0 4px 20px rgba(109,40,217,0.35)",
-                transition: "transform 0.2s, box-shadow 0.2s",
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: "0 2px 10px rgba(76,102,43,0.22)",
+                transition: "transform 0.22s, box-shadow 0.22s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.transform = "translateY(-1px)";
                 e.currentTarget.style.boxShadow =
-                  "0 6px 28px rgba(109,40,217,0.45)";
+                  "0 4px 16px rgba(76,102,43,0.28)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow =
-                  "0 4px 20px rgba(109,40,217,0.35)";
+                  "0 2px 10px rgba(76,102,43,0.22)";
               }}
             >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
               Begin Grounding
             </button>
           </div>
         )}
 
-        {/* ──────── SENSORY STEPS ──────── */}
+        {/* ════ SENSORY STEPS ════ */}
         {current && step >= 0 && step < steps.length && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {/* Step progress pills */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Progress pills */}
             <div
               style={{
                 display: "flex",
@@ -507,17 +614,21 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
                 justifyContent: "space-between",
               }}
             >
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 5 }}>
                 {steps.map((s, i) => (
                   <div
                     key={s.key}
                     style={{
-                      width: i === step ? 28 : 8,
-                      height: 8,
+                      width: i === step ? 26 : 7,
+                      height: 7,
                       borderRadius: 999,
                       background:
-                        i < step ? sc.accent : i === step ? sc.ring : "#D1D5DB",
-                      opacity: i <= step ? 1 : 0.4,
+                        i < step
+                          ? sc.accent
+                          : i === step
+                            ? sc.ring
+                            : "var(--outline-variant)",
+                      opacity: i <= step ? 1 : 0.5,
                       transition: "all 0.4s ease",
                     }}
                   />
@@ -538,12 +649,12 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 64,
-                  height: 64,
+                  width: 60,
+                  height: 60,
                   borderRadius: "50%",
-                  background: `${sc.ring}18`,
-                  border: `2px solid ${sc.ring}40`,
-                  fontSize: 28,
+                  background: sc.bg,
+                  border: `1.5px solid ${sc.ring}35`,
+                  fontSize: 26,
                   marginBottom: 12,
                   animation: "gfPulseGlow 3s ease-in-out infinite",
                 }}
@@ -552,30 +663,40 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
               </div>
               <p
                 style={{
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: 600,
                   color: sc.accent,
                   margin: 0,
+                  fontFamily: "'Playfair Display', serif",
+                  fontStyle: "italic",
                 }}
               >
                 {current.label}
               </p>
-              <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--outline)",
+                  marginTop: 5,
+                  fontWeight: 400,
+                }}
+              >
                 Step {step + 1} of {steps.length} ·{" "}
                 {responses[current.key].length} of {current.count} added
               </div>
             </div>
 
-            {/* Input field */}
+            {/* Input */}
             <div
+              className="gf-input-wrap"
               style={{
                 display: "flex",
                 gap: 8,
-                background: "#fff",
-                borderRadius: 14,
+                background: "var(--background)",
+                borderRadius: 12,
                 padding: 4,
-                border: `2px solid ${sc.ring}30`,
-                boxShadow: `0 2px 12px ${sc.glow}`,
+                border: `1.5px solid var(--outline-variant)`,
+                transition: "border-color 0.2s, box-shadow 0.2s",
               }}
             >
               <input
@@ -585,31 +706,33 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") addItem();
                 }}
-                placeholder="Type and press add"
+                placeholder="Type and press add…"
                 style={{
                   flex: 1,
                   border: "none",
                   outline: "none",
-                  padding: "10px 12px",
+                  padding: "9px 12px",
                   fontSize: 14,
-                  fontFamily: font,
+                  fontFamily: "'DM Sans', sans-serif",
                   background: "transparent",
-                  color: "#1E1B2E",
+                  color: "var(--on-surface)",
                 }}
               />
               <button
                 onClick={addItem}
                 disabled={!input.trim()}
                 style={{
-                  padding: "8px 18px",
-                  borderRadius: 11,
+                  padding: "8px 16px",
+                  borderRadius: 9,
                   border: "none",
-                  background: input.trim() ? sc.ring : "#E5E7EB",
-                  color: input.trim() ? "#fff" : "#9CA3AF",
+                  background: input.trim()
+                    ? sc.ring
+                    : "var(--surface-container-highest)",
+                  color: input.trim() ? "#fff" : "var(--outline)",
                   fontWeight: 600,
                   fontSize: 13,
                   cursor: input.trim() ? "pointer" : "default",
-                  fontFamily: font,
+                  fontFamily: "'DM Sans', sans-serif",
                   transition: "all 0.2s",
                 }}
               >
@@ -622,83 +745,106 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 8,
+                gap: 7,
                 minHeight: 32,
               }}
             >
               {responses[current.key].map((r, i) => (
-                <Chip key={i} text={r} color={sc.accent} index={i} />
+                <Chip key={i} text={r} sc={sc} index={i} />
               ))}
             </div>
 
-            {/* Next — only when enough items */}
+            {/* Next button — appears when quota met */}
             {responses[current.key].length >= current.count && (
               <button
                 onClick={nextStep}
                 style={{
                   width: "100%",
-                  padding: "13px 0",
-                  borderRadius: 14,
+                  padding: "12px 0",
+                  borderRadius: 12,
                   border: "none",
-                  background: `linear-gradient(135deg, ${sc.ring}, ${sc.accent})`,
+                  background:
+                    sc.accent === "var(--primary)" ||
+                    sc.accent === "#354E16" ||
+                    sc.accent === "#4C662B"
+                      ? "var(--primary)"
+                      : sc.ring,
                   color: "#fff",
                   fontSize: 15,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   cursor: "pointer",
-                  fontFamily: font,
-                  boxShadow: `0 4px 20px ${sc.glow}`,
+                  fontFamily: "'DM Sans', sans-serif",
+                  boxShadow: `0 3px 14px ${sc.glow}`,
                   animation: "gfChipIn 0.4s cubic-bezier(.34,1.56,.64,1)",
                   transition: "transform 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.transform = "translateY(-2px)")
+                  (e.currentTarget.style.transform = "translateY(-1px)")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.transform = "translateY(0)")
                 }
               >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
                 Next
               </button>
             )}
           </div>
         )}
 
-        {/* ──────── AFTER STEP ──────── */}
+        {/* ════ AFTER STEP ════ */}
         {step === steps.length && (
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 24,
+              gap: 20,
             }}
           >
-            <BreathingRing color="#10b981" />
+            <BreathingRing color="var(--tertiary)" />
 
+            {/* Stats summary */}
             <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+              <p style={{ fontSize: 13, color: "var(--outline)", margin: 0 }}>
                 You noticed
               </p>
               <p
                 style={{
-                  fontSize: 30,
-                  fontFamily: displayFont,
-                  color: "#1E1B2E",
+                  fontSize: 32,
+                  fontFamily: "'Playfair Display', serif",
+                  color: "var(--on-surface)",
                   margin: "4px 0",
+                  fontWeight: 400,
                 }}
               >
                 {doneSenses} things
               </p>
-              <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+              <p style={{ fontSize: 13, color: "var(--outline)", margin: 0 }}>
                 around you
               </p>
             </div>
 
             <p
               style={{
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: 500,
-                color: "#1E4D3A",
+                color: "var(--on-surface)",
                 textAlign: "center",
                 margin: 0,
               }}
@@ -711,16 +857,32 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
             {before > after && (
               <div
                 style={{
-                  background: "#D1FAE5",
+                  background: "var(--primary-container)",
                   borderRadius: 12,
                   padding: "10px 16px",
                   fontSize: 13,
-                  color: "#065F46",
+                  color: "var(--on-primary-container)",
                   textAlign: "center",
-                  border: "1px solid #A7F3D0",
+                  border: "1px solid rgba(76,102,43,0.2)",
                   width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
                 }}
               >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 5v14M5 12l7 7 7-7" />
+                </svg>
                 Your intensity dropped by {before - after} — nice work
               </div>
             )}
@@ -729,35 +891,53 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
               onClick={saveSession}
               style={{
                 width: "100%",
-                padding: "14px 0",
-                borderRadius: 14,
+                padding: "13px 0",
+                borderRadius: 12,
                 border: "none",
-                background: "linear-gradient(135deg, #10b981, #059669)",
+                background: "var(--tertiary)",
                 color: "#fff",
                 fontSize: 15,
-                fontWeight: 600,
+                fontWeight: 500,
                 cursor: "pointer",
-                fontFamily: font,
-                boxShadow: "0 4px 20px rgba(16,185,129,0.35)",
-                transition: "transform 0.2s, box-shadow 0.2s",
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: "0 2px 10px rgba(56,102,99,0.22)",
+                transition: "transform 0.22s, box-shadow 0.22s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.transform = "translateY(-1px)";
                 e.currentTarget.style.boxShadow =
-                  "0 6px 28px rgba(16,185,129,0.45)";
+                  "0 4px 16px rgba(56,102,99,0.28)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow =
-                  "0 4px 20px rgba(16,185,129,0.35)";
+                  "0 2px 10px rgba(56,102,99,0.22)";
               }}
             >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
               Save Session
             </button>
           </div>
         )}
 
-        {/* ──────── COMPLETE ──────── */}
+        {/* ════ COMPLETE ════ */}
         {step > steps.length && (
           <div
             style={{
@@ -768,8 +948,8 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
           >
             <div
               style={{
-                fontSize: 56,
-                marginBottom: 12,
+                fontSize: 54,
+                marginBottom: 14,
                 position: "relative",
                 display: "inline-block",
               }}
@@ -780,28 +960,63 @@ export default function GroundingFlow({ sessionId = null, onComplete }) {
                   key={i}
                   style={{
                     position: "absolute",
-                    fontSize: 14,
+                    fontSize: 13,
                     top: "50%",
                     left: "50%",
                     animation: `gfConfetti 1.2s ease-out ${i * 0.1}s forwards`,
                     transform: `rotate(${i * 60}deg) translateY(-10px)`,
+                    color: "var(--primary)",
                   }}
                 >
                   ✦
                 </span>
               ))}
             </div>
+
+            {/* Success icon */}
+            <div
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                background: "var(--primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+                boxShadow: "0 4px 18px rgba(76,102,43,0.28)",
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <path
+                  d="M7 14.5L12 19.5L21 9.5"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
             <p
               style={{
-                fontFamily: displayFont,
-                fontSize: 22,
-                color: "#065F46",
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "1.3rem",
+                fontWeight: 400,
+                color: "var(--on-surface)",
                 margin: "0 0 8px",
               }}
             >
               Session Complete
             </p>
-            <p style={{ fontSize: 14, color: "#6B7280", margin: 0 }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: "var(--outline)",
+                margin: 0,
+                fontWeight: 300,
+              }}
+            >
               Grounding session saved 🌿
             </p>
           </div>

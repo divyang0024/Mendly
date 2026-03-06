@@ -18,7 +18,7 @@ const patterns = {
 
 const patternIcons = {
   "4-4-6": (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
       <path
         d="M14 4C8.477 4 4 8.477 4 14s4.477 10 10 10 10-4.477 10-10S19.523 4 14 4z"
         stroke="currentColor"
@@ -34,7 +34,7 @@ const patternIcons = {
     </svg>
   ),
   box: (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
       <rect
         x="6"
         y="6"
@@ -56,7 +56,7 @@ const patternIcons = {
     </svg>
   ),
   extended: (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
       <path
         d="M4 20c3-8 6-12 10-12s7 4 10 12"
         stroke="currentColor"
@@ -74,7 +74,7 @@ const patternIcons = {
   ),
 };
 
-/* ── Floating Particles ── */
+/* ── Floating Particles (logic untouched) ── */
 function FloatingParticles({ phase }) {
   const particles = useMemo(
     () =>
@@ -88,10 +88,8 @@ function FloatingParticles({ phase }) {
       })),
     [],
   );
-
   const yShift = phase === "Inhale" ? -35 : phase === "Exhale" ? 35 : 0;
   const opacity = phase === "Hold" ? 0.55 : 0.35;
-
   return (
     <div
       style={{
@@ -112,7 +110,7 @@ function FloatingParticles({ phase }) {
             width: p.size,
             height: p.size,
             borderRadius: "50%",
-            background: "rgba(255,255,255,0.85)",
+            background: "rgba(255,255,255,0.9)",
             opacity,
             transform: `translate(${p.drift * (phase === "Hold" ? 0.3 : 1)}px, ${yShift}px) scale(${phase === "Hold" ? 1.3 : 1})`,
             transition: `all ${phase === "Hold" ? "0.5s" : phase === "Inhale" ? "3.2s" : "4.2s"} cubic-bezier(0.4, 0, 0.2, 1)`,
@@ -124,14 +122,13 @@ function FloatingParticles({ phase }) {
   );
 }
 
-/* ── Circular Progress Arc ── */
+/* ── Circular Progress Arc (logic untouched) ── */
 function ProgressArc({ count, totalForPhase, color }) {
   const radius = 106;
   const circumference = 2 * Math.PI * radius;
   const progress =
     totalForPhase > 0 ? (totalForPhase - count) / totalForPhase : 0;
   const offset = circumference * (1 - progress);
-
   return (
     <svg
       width="228"
@@ -150,7 +147,7 @@ function ProgressArc({ count, totalForPhase, color }) {
         cy="114"
         r={radius}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        stroke="rgba(255,255,255,0.1)"
         strokeWidth="2.5"
       />
       <circle
@@ -165,7 +162,6 @@ function ProgressArc({ count, totalForPhase, color }) {
         strokeDashoffset={offset}
         style={{ transition: "stroke-dashoffset 1s linear, stroke 0.6s ease" }}
       />
-      {/* Dot at the end of progress */}
       {progress > 0.02 && (
         <circle
           cx={114 + radius * Math.cos(2 * Math.PI * progress)}
@@ -184,43 +180,49 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
   const [before, setBefore] = useState(5);
   const [after, setAfter] = useState(5);
   const [pattern, setPattern] = useState("4-4-6");
-
   const [phase, setPhase] = useState("Inhale");
   const [count, setCount] = useState(patterns["4-4-6"].inhale);
   const [running, setRunning] = useState(false);
   const [duration, setDuration] = useState(0);
   const [breathingSessionId, setBreathingSessionId] = useState(null);
-
   const timerRef = useRef(null);
 
-  /* ---------- Visual Helpers ---------- */
-  const getScale = () => {
-    if (phase === "Inhale") return 1.2;
-    if (phase === "Hold") return 1.2;
-    return 0.78;
-  };
+  const getScale = () => (phase === "Exhale" ? 0.78 : 1.2);
 
+  /* Phase configs — brand palette dark variants */
   const phaseConfig = {
     Inhale: {
-      bg: "linear-gradient(145deg, #5a9de6, #7db8f5, #93c5fd)",
-      glow: "rgba(90,157,230,0.45)",
-      arc: "rgba(255,255,255,0.75)",
       stageBg:
-        "linear-gradient(170deg, #0f2640 0%, #183352 30%, #1a3a5c 60%, #162d48 100%)",
+        "linear-gradient(170deg, #0E1A00 0%, #172B00 35%, #1F3700 65%, #152500 100%)",
+      orbBg: "linear-gradient(145deg, #2A4500, #3D6300, #4C7A00)",
+      glow: "rgba(76,102,43,0.7)",
+      arc: "#CDEDA3",
+      ripple: "rgba(177,209,138,0.3)",
+      highlight: "rgba(177,209,138,0.2)",
+      accent: "#CDEDA3",
+      label: "rgba(177,209,138,0.8)",
     },
     Hold: {
-      bg: "linear-gradient(145deg, #e8c84a, #f5d97d, #fde68a)",
-      glow: "rgba(232,200,74,0.4)",
-      arc: "rgba(255,255,255,0.75)",
       stageBg:
-        "linear-gradient(170deg, #2a2410 0%, #3d3520 30%, #4a4028 60%, #2e2815 100%)",
+        "linear-gradient(170deg, #111A08 0%, #1C2B0D 35%, #253815 65%, #182410 100%)",
+      orbBg: "linear-gradient(145deg, #263319, #384A28, #4A6036)",
+      glow: "rgba(88,98,73,0.7)",
+      arc: "#DCE7C8",
+      ripple: "rgba(220,231,200,0.28)",
+      highlight: "rgba(191,203,173,0.18)",
+      accent: "#DCE7C8",
+      label: "rgba(191,203,173,0.8)",
     },
     Exhale: {
-      bg: "linear-gradient(145deg, #4abf6e, #6dd594, #86efac)",
-      glow: "rgba(74,191,110,0.4)",
-      arc: "rgba(255,255,255,0.75)",
       stageBg:
-        "linear-gradient(170deg, #0f2e1e 0%, #183d2a 30%, #1e4a34 60%, #153526 100%)",
+        "linear-gradient(170deg, #001614 0%, #002422 35%, #003230 65%, #001C1A 100%)",
+      orbBg: "linear-gradient(145deg, #003330, #0D4845, #1F5C59)",
+      glow: "rgba(56,102,99,0.7)",
+      arc: "#BCECE7",
+      ripple: "rgba(188,236,231,0.3)",
+      highlight: "rgba(160,208,203,0.2)",
+      accent: "#BCECE7",
+      label: "rgba(160,208,203,0.8)",
     },
   };
 
@@ -231,7 +233,6 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
     return p.exhale;
   };
 
-  /* ---------- START SESSION ---------- */
   const handleStartSession = async () => {
     const res = await startBreathingSession({
       sessionId,
@@ -242,7 +243,6 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
     setStep(3);
   };
 
-  /* ---------- BREATHING CYCLE ---------- */
   useEffect(() => {
     if (!running) return;
     timerRef.current = setInterval(() => {
@@ -294,279 +294,486 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
     setStep(6);
   };
 
-  /* ---------- Feeling Helpers ---------- */
   const feelingText = (val) => {
     if (val <= 3) return "Body feels calm & regulated";
     if (val <= 6) return "Some tension present";
     return "High stress / activation";
   };
+  const feelingEmoji = (val) => (val <= 3 ? "🌿" : val <= 6 ? "🌤" : "🔥");
+  const feelingColors = (val) => ({
+    bg:
+      val <= 3
+        ? "var(--primary-container)"
+        : val <= 6
+          ? "#FEF3C7"
+          : "var(--error-container)",
+    text:
+      val <= 3
+        ? "var(--on-primary-container)"
+        : val <= 6
+          ? "#78350F"
+          : "var(--on-error-container)",
+  });
 
-  const feelingEmoji = (val) => {
-    if (val <= 3) return "🌿";
-    if (val <= 6) return "🌤";
-    return "🔥";
-  };
-
-  /* ---------- Step Progress ---------- */
   const progressStep = step >= 6 ? 5 : step;
+  const formatDuration = (sec) =>
+    `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
-  const formatDuration = (sec) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  };
-
-  /* Ripple re-trigger key */
   const [rippleKey, setRippleKey] = useState(0);
   useEffect(() => {
     if (step === 4) setRippleKey((k) => k + 1);
   }, [phase, step]);
 
+  const cfg = phaseConfig[phase];
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+          --primary:               #4C662B;
+          --primary-container:     #CDEDA3;
+          --on-primary:            #FFFFFF;
+          --on-primary-container:  #354E16;
+          --secondary:             #586249;
+          --secondary-container:   #DCE7C8;
+          --on-secondary-container:#404A33;
+          --tertiary:              #386663;
+          --tertiary-container:    #BCECE7;
+          --on-tertiary-container: #1F4E4B;
+          --error:                 #BA1A1A;
+          --error-container:       #FFDAD6;
+          --on-error-container:    #93000A;
+          --background:            #F9FAEF;
+          --on-background:         #1A1C16;
+          --surface:               #F9FAEF;
+          --on-surface:            #1A1C16;
+          --on-surface-variant:    #44483D;
+          --outline:               #75796C;
+          --outline-variant:       #C5C8BA;
+          --surface-container-low: #F3F4E9;
+          --surface-container:     #EEEFE3;
+          --surface-container-high:#E8E9DE;
+          --surface-container-highest:#E2E3D8;
+          --inverse-primary:       #B1D18A;
+          --inverse-surface:       #2F312A;
+          --inverse-on-surface:    #F1F2E6;
+        }
+
+        /* ════════════════════════════════
+           ROOT CARD — matches app surface
+        ════════════════════════════════ */
         .bf-root {
           font-family: 'DM Sans', sans-serif;
-          background: linear-gradient(165deg, #f0f7ff 0%, #fafcff 40%, #f5faf7 100%);
-          border: 1px solid rgba(0,0,0,0.06);
-          border-radius: 24px;
-          max-width: 420px;
+          background: var(--surface);
+          border: 1.5px solid var(--outline-variant);
+          border-radius: 20px;
+          max-width: 440px;
           margin: 0 auto;
           overflow: hidden;
           position: relative;
+          box-shadow: 0 1px 12px rgba(26,28,22,0.07), 0 4px 24px rgba(26,28,22,0.04);
         }
 
+        /* Subtle top-right botanical glow — same as Login/Home panels */
         .bf-root::before {
           content: '';
           position: absolute;
-          top: -60px;
-          right: -60px;
-          width: 180px;
-          height: 180px;
+          top: -50px; right: -50px;
+          width: 160px; height: 160px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(147,197,253,0.15) 0%, transparent 70%);
-          pointer-events: none;
+          background: radial-gradient(circle, rgba(76,102,43,0.07) 0%, transparent 70%);
+          pointer-events: none; z-index: 0;
         }
 
         .bf-inner {
-          padding: 32px 28px;
+          padding: 28px 26px;
           position: relative;
           z-index: 1;
         }
 
-        .bf-progress-bar { display: flex; gap: 6px; margin-bottom: 28px; }
-        .bf-progress-segment { flex: 1; height: 3px; border-radius: 4px; background: rgba(0,0,0,0.06); transition: background 0.5s ease; }
-        .bf-progress-segment.active { background: linear-gradient(90deg, #6ba5e7, #81c995); }
-
-        .bf-title { font-size: 22px; font-weight: 600; color: #1a2b3c; letter-spacing: -0.3px; margin: 0 0 4px 0; }
-        .bf-subtitle { font-size: 14px; color: #7a8a9a; font-weight: 300; margin: 0 0 24px 0; }
-
-        .bf-btn-primary {
-          width: 100%; padding: 14px 24px; border: none; border-radius: 14px;
-          font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
-          cursor: pointer; transition: all 0.25s ease;
-          background: linear-gradient(135deg, #5b93d5 0%, #6ba5e7 100%);
-          color: white; letter-spacing: 0.2px; box-shadow: 0 4px 14px rgba(91,147,213,0.25);
+        /* ════════════════════════════════
+           PROGRESS BAR
+        ════════════════════════════════ */
+        .bf-progress-bar {
+          display: flex; gap: 5px; margin-bottom: 24px;
         }
-        .bf-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(91,147,213,0.35); }
-        .bf-btn-primary:active { transform: translateY(0); }
-        .bf-btn-primary.green { background: linear-gradient(135deg, #5aad70 0%, #6bc985 100%); box-shadow: 0 4px 14px rgba(90,173,112,0.25); }
-        .bf-btn-primary.green:hover { box-shadow: 0 6px 20px rgba(90,173,112,0.35); }
-
-        .bf-btn-secondary {
-          width: 100%; padding: 14px 24px; border: 1.5px solid rgba(0,0,0,0.08); border-radius: 14px;
-          font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
-          cursor: pointer; background: white; color: #3a4a5a; transition: all 0.25s ease;
+        .bf-progress-segment {
+          flex: 1; height: 3px; border-radius: 3px;
+          background: var(--surface-container-highest);
+          transition: background 0.5s ease;
         }
-        .bf-btn-secondary:hover { border-color: rgba(0,0,0,0.15); background: #fafbfc; }
-
-        .bf-btn-stop {
-          padding: 10px 32px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 12px;
-          font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
-          cursor: pointer; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
-          transition: all 0.25s ease; backdrop-filter: blur(8px);
+        .bf-progress-segment.active {
+          background: linear-gradient(90deg, var(--primary), var(--tertiary));
         }
-        .bf-btn-stop:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
 
-        /* Slider */
-        .bf-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 6px; outline: none; transition: background 0.3s ease; }
-        .bf-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 3px currentColor; cursor: pointer; transition: box-shadow 0.2s ease; }
-        .bf-slider::-webkit-slider-thumb:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 0 0 4px currentColor; }
-        .bf-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 3px currentColor; cursor: pointer; border: none; }
+        /* ════════════════════════════════
+           TYPOGRAPHY — matches app exactly
+        ════════════════════════════════ */
+        .bf-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.5rem;
+          font-weight: 400;
+          color: var(--on-surface);
+          letter-spacing: -0.3px;
+          margin: 0 0 5px;
+          line-height: 1.2;
+        }
+        .bf-subtitle {
+          font-size: 14px;
+          font-weight: 300;
+          color: var(--outline);
+          margin: 0 0 22px;
+          line-height: 1.6;
+        }
 
-        /* Pattern Cards */
-        .bf-pattern-card { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1.5px solid rgba(0,0,0,0.06); border-radius: 16px; cursor: pointer; transition: all 0.25s ease; background: white; }
-        .bf-pattern-card:hover { border-color: rgba(91,147,213,0.25); background: rgba(240,247,255,0.5); }
-        .bf-pattern-card.selected { border-color: rgba(91,147,213,0.45); background: linear-gradient(135deg, rgba(240,247,255,0.8) 0%, rgba(240,255,245,0.5) 100%); box-shadow: 0 2px 12px rgba(91,147,213,0.1); }
-        .bf-pattern-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(91,147,213,0.08); color: #5b93d5; transition: all 0.25s ease; }
-        .bf-pattern-card.selected .bf-pattern-icon { background: rgba(91,147,213,0.15); color: #4a82c4; }
-        .bf-pattern-check { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.25s ease; }
-        .bf-pattern-card.selected .bf-pattern-check { border-color: #5b93d5; background: #5b93d5; }
-
-        /* ═══ IMMERSIVE BREATHING STAGE ═══ */
-        .bf-breath-stage {
-          position: relative;
-          min-height: 460px;
-          display: flex;
-          flex-direction: column;
+        /* ════════════════════════════════
+           EYEBROW BADGE — same as Login/Home
+        ════════════════════════════════ */
+        .bf-eyebrow {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          margin: -32px -28px;
-          padding: 36px 28px;
-          transition: background 1.4s ease;
-          overflow: hidden;
+          gap: 7px;
+          background: var(--primary-container);
+          border: 1px solid rgba(76,102,43,0.2);
+          border-radius: 100px;
+          padding: 4px 12px 4px 9px;
+          margin-bottom: 14px;
+          width: fit-content;
+        }
+        .bf-eyebrow-dot {
+          width: 6px; height: 6px;
+          background: var(--primary);
+          border-radius: 50%;
+          animation: bfPulse 2.2s ease-in-out infinite;
+        }
+        .bf-eyebrow p {
+          font-size: 11px; font-weight: 500;
+          letter-spacing: 0.07em; text-transform: uppercase;
+          color: var(--on-primary-container);
+        }
+        @keyframes bfPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+        /* ════════════════════════════════
+           WELCOME ICON — styled like Home cards
+        ════════════════════════════════ */
+        .bf-welcome-icon {
+          width: 64px; height: 64px;
+          border-radius: 18px;
+          background: var(--primary-container);
+          border: 1.5px solid rgba(76,102,43,0.18);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 18px;
+          font-size: 28px;
+        }
+
+        /* ════════════════════════════════
+           BUTTONS — exact app button style
+        ════════════════════════════════ */
+        .bf-btn-primary {
+          width: 100%; padding: 13px 20px;
+          border: none; border-radius: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px; font-weight: 500;
+          cursor: pointer; transition: all 0.22s ease;
+          background: var(--primary);
+          color: var(--on-primary);
+          box-shadow: 0 2px 10px rgba(76,102,43,0.2);
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .bf-btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(76,102,43,0.28);
+          background: #3d5422;
+        }
+        .bf-btn-primary:active { transform: translateY(0); }
+
+        .bf-btn-teal {
+          width: 100%; padding: 13px 20px;
+          border: none; border-radius: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px; font-weight: 500;
+          cursor: pointer; transition: all 0.22s ease;
+          background: var(--tertiary);
+          color: #fff;
+          box-shadow: 0 2px 10px rgba(56,102,99,0.2);
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .bf-btn-teal:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(56,102,99,0.28);
+          background: #2d5452;
+        }
+        .bf-btn-teal:active { transform: translateY(0); }
+
+        .bf-btn-outline {
+          width: 100%; padding: 13px 20px;
+          border: 1.5px solid var(--outline-variant);
+          border-radius: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px; font-weight: 500;
+          cursor: pointer;
+          background: var(--surface-container);
+          color: var(--on-surface);
+          transition: all 0.22s ease;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .bf-btn-outline:hover {
+          border-color: var(--outline);
+          background: var(--surface-container-high);
+          transform: translateY(-1px);
+        }
+
+        /* ════════════════════════════════
+           SLIDER
+        ════════════════════════════════ */
+        .bf-slider {
+          -webkit-appearance: none; appearance: none;
+          width: 100%; height: 5px; border-radius: 5px;
+          outline: none; transition: background 0.3s;
+        }
+        .bf-slider::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 20px; height: 20px; border-radius: 50%;
+          background: var(--surface);
+          box-shadow: 0 1px 6px rgba(0,0,0,0.12), 0 0 0 2.5px currentColor;
+          cursor: pointer; transition: box-shadow 0.2s;
+        }
+        .bf-slider::-webkit-slider-thumb:hover { box-shadow: 0 1px 8px rgba(0,0,0,0.18), 0 0 0 3.5px currentColor; }
+        .bf-slider::-moz-range-thumb {
+          width: 20px; height: 20px; border-radius: 50%;
+          background: var(--surface); border: none;
+          box-shadow: 0 1px 6px rgba(0,0,0,0.12), 0 0 0 2.5px currentColor; cursor: pointer;
+        }
+
+        /* ════════════════════════════════
+           FEELING BADGE
+        ════════════════════════════════ */
+        .bf-feeling-badge {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 7px 14px; border-radius: 100px;
+          font-size: 13.5px; font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        /* ════════════════════════════════
+           PATTERN CARDS — matches Home card style
+        ════════════════════════════════ */
+        .bf-pattern-card {
+          display: flex; align-items: center; gap: 14px;
+          padding: 14px 16px;
+          border: 1.5px solid var(--outline-variant);
+          border-radius: 14px; cursor: pointer;
+          transition: all 0.22s ease;
+          background: var(--surface-container-low);
+        }
+        .bf-pattern-card:hover {
+          border-color: rgba(76,102,43,0.3);
+          background: var(--surface-container);
+          transform: translateX(3px);
+          box-shadow: 0 2px 8px rgba(76,102,43,0.06);
+        }
+        .bf-pattern-card.selected {
+          border-color: var(--primary);
+          background: var(--primary-container);
+          box-shadow: 0 2px 12px rgba(76,102,43,0.12);
+        }
+
+        .bf-pattern-icon-wrap {
+          width: 44px; height: 44px; border-radius: 11px;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          background: var(--surface-container-high);
+          color: var(--outline);
+          transition: all 0.22s ease;
+        }
+        .bf-pattern-card.selected .bf-pattern-icon-wrap {
+          background: rgba(76,102,43,0.14);
+          color: var(--primary);
+        }
+
+        .bf-pattern-title {
+          font-size: 14.5px; font-weight: 500;
+          color: var(--on-surface); transition: color 0.2s;
+        }
+        .bf-pattern-card.selected .bf-pattern-title { color: var(--on-primary-container); }
+
+        .bf-pattern-sub {
+          font-size: 12.5px; color: var(--outline); margin-top: 1px; transition: color 0.2s;
+        }
+        .bf-pattern-card.selected .bf-pattern-sub { color: var(--on-primary-container); opacity: 0.7; }
+
+        .bf-pattern-check {
+          margin-left: auto; width: 20px; height: 20px; border-radius: 50%;
+          border: 1.5px solid var(--outline-variant);
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          transition: all 0.22s ease;
+        }
+        .bf-pattern-card.selected .bf-pattern-check { border-color: var(--primary); background: var(--primary); }
+
+        /* ════════════════════════════════════════
+           IMMERSIVE BREATHING STAGE
+           — Dark variant of brand palette
+           — Botanical ring motif from Login/Home
+        ════════════════════════════════════════ */
+        .bf-stage {
+          position: relative; min-height: 480px;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          margin: -28px -26px; padding: 40px 28px 36px;
+          overflow: hidden; transition: background 1.4s ease;
+        }
+
+        /* Botanical dot grid — same technique as Login panel */
+        .bf-stage-dots {
+          position: absolute; inset: 0;
+          background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+          background-size: 22px 22px;
+          pointer-events: none; z-index: 0;
+        }
+
+        /* Botanical ring decorations — same motif as Login/Home hero */
+        .bf-stage-ring {
+          position: absolute; border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.06);
+          pointer-events: none; z-index: 0;
+        }
+
+        /* Ambient glow blobs */
+        .bf-blob {
+          position: absolute; border-radius: 50%;
+          filter: blur(70px); pointer-events: none; z-index: 0;
+          transition: all 1.6s ease;
         }
 
         .bf-orb-area {
-          position: relative;
-          width: 200px;
-          height: 200px;
-          margin: 0 auto;
+          position: relative; width: 200px; height: 200px; margin: 0 auto;
         }
 
-        /* Ripples */
-        @keyframes bf-ripple-expand {
-          0% { transform: scale(0.95); opacity: 0.5; }
-          100% { transform: scale(2); opacity: 0; }
-        }
-        @keyframes bf-ripple-contract {
-          0% { transform: scale(1.8); opacity: 0.4; }
-          100% { transform: scale(0.8); opacity: 0; }
-        }
-        @keyframes bf-ripple-breathe {
-          0%, 100% { transform: scale(1.1); opacity: 0.3; }
-          50% { transform: scale(1.3); opacity: 0.15; }
-        }
+        /* ── Ripple animations ── */
+        @keyframes bfRippleExpand   { 0%{transform:scale(0.95);opacity:0.45} 100%{transform:scale(2.1);opacity:0} }
+        @keyframes bfRippleContract { 0%{transform:scale(1.85);opacity:0.4}  100%{transform:scale(0.8);opacity:0} }
+        @keyframes bfRippleBreathe  { 0%,100%{transform:scale(1.1);opacity:0.25} 50%{transform:scale(1.35);opacity:0.1} }
 
-        .bf-ripple {
-          position: absolute;
-          inset: -5px;
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 0;
-        }
+        .bf-ripple { position:absolute; inset:-5px; border-radius:50%; pointer-events:none; z-index:0; }
+        .bf-ripple.inhale { animation: bfRippleExpand   3.5s ease-out  infinite; }
+        .bf-ripple.inhale.r2 { animation-delay:.9s; }
+        .bf-ripple.inhale.r3 { animation-delay:1.8s; }
+        .bf-ripple.exhale { animation: bfRippleContract 4.5s ease-in   infinite; }
+        .bf-ripple.exhale.r2 { animation-delay:1.2s; }
+        .bf-ripple.exhale.r3 { animation-delay:2.4s; }
+        .bf-ripple.hold   { animation: bfRippleBreathe  2.5s ease-in-out infinite; }
+        .bf-ripple.hold.r2 { animation-delay:.8s; }
+        .bf-ripple.hold.r3 { animation-delay:1.6s; }
 
-        .bf-ripple.inhale { animation: bf-ripple-expand 3.5s ease-out infinite; }
-        .bf-ripple.inhale.r2 { animation-delay: 0.9s; }
-        .bf-ripple.inhale.r3 { animation-delay: 1.8s; }
-
-        .bf-ripple.exhale { animation: bf-ripple-contract 4.5s ease-in infinite; }
-        .bf-ripple.exhale.r2 { animation-delay: 1.2s; }
-        .bf-ripple.exhale.r3 { animation-delay: 2.4s; }
-
-        .bf-ripple.hold { animation: bf-ripple-breathe 2.5s ease-in-out infinite; }
-        .bf-ripple.hold.r2 { animation-delay: 0.8s; }
-        .bf-ripple.hold.r3 { animation-delay: 1.6s; }
-
-        /* Main orb */
         .bf-main-orb {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          box-shadow:
-            0 8px 48px rgba(0,0,0,0.15),
-            inset 0 -6px 24px rgba(0,0,0,0.08),
-            inset 0 6px 24px rgba(255,255,255,0.25);
-          overflow: hidden;
-          z-index: 2;
-          transition: background 0.8s ease;
+          position:absolute; inset:0; border-radius:50%;
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          box-shadow: 0 12px 48px rgba(0,0,0,0.4), inset 0 -8px 24px rgba(0,0,0,0.15), inset 0 8px 28px rgba(255,255,255,0.08);
+          overflow:hidden; z-index:2; transition: background 0.8s ease;
         }
-
-        .bf-main-orb::before {
-          content: '';
-          position: absolute;
-          top: 10%;
-          left: 18%;
-          width: 38%;
-          height: 28%;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.2);
-          filter: blur(12px);
-          pointer-events: none;
-        }
-
         .bf-glow-layer {
-          position: absolute;
-          inset: -35px;
-          border-radius: 50%;
-          filter: blur(45px);
-          z-index: 0;
-          transition: all 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+          position:absolute; inset:-35px; border-radius:50%;
+          filter:blur(50px); z-index:0;
+          transition: all 1.4s cubic-bezier(0.4,0,0.2,1);
         }
 
         /* Direction arrows */
-        @keyframes bf-float-up {
-          0%, 100% { transform: translateY(0); opacity: 0.7; }
-          50% { transform: translateY(-6px); opacity: 1; }
-        }
-        @keyframes bf-float-down {
-          0%, 100% { transform: translateY(0); opacity: 0.7; }
-          50% { transform: translateY(6px); opacity: 1; }
-        }
-        @keyframes bf-pulse-hold {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.2); opacity: 0.9; }
-        }
+        @keyframes bfFloatUp   { 0%,100%{transform:translateY(0);opacity:0.7} 50%{transform:translateY(-6px);opacity:1} }
+        @keyframes bfFloatDown { 0%,100%{transform:translateY(0);opacity:0.7} 50%{transform:translateY(6px);opacity:1} }
+        @keyframes bfPulseHold { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.2);opacity:0.9} }
+        .bf-dir.inhale { animation: bfFloatUp   1.4s ease-in-out infinite; }
+        .bf-dir.exhale { animation: bfFloatDown 1.4s ease-in-out infinite; }
+        .bf-dir.hold   { animation: bfPulseHold 2s   ease-in-out infinite; }
 
-        .bf-dir.inhale { animation: bf-float-up 1.4s ease-in-out infinite; }
-        .bf-dir.exhale { animation: bf-float-down 1.4s ease-in-out infinite; }
-        .bf-dir.hold { animation: bf-pulse-hold 2s ease-in-out infinite; }
-
-        /* Phase indicator dots */
-        .bf-phase-indicator { display: flex; gap: 6px; align-items: center; }
+        /* Phase pills */
+        .bf-phase-indicator { display:flex; gap:6px; align-items:center; }
         .bf-phase-pill {
-          padding: 4px 10px;
-          border-radius: 10px;
-          font-size: 11px;
-          font-weight: 500;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
+          padding: 4px 11px; border-radius: 9px;
+          font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
           transition: all 0.4s ease;
-          color: rgba(255,255,255,0.35);
-          background: transparent;
+          color: rgba(255,255,255,0.28); background: transparent;
+          border: 1px solid transparent;
         }
         .bf-phase-pill.active {
           color: rgba(255,255,255,0.95);
-          background: rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.1);
+          border-color: rgba(255,255,255,0.14);
         }
 
         /* Timer chip */
         .bf-timer-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 14px;
-          border-radius: 20px;
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(6px);
-          font-size: 13px;
-          font-weight: 400;
-          color: rgba(255,255,255,0.6);
-          font-variant-numeric: tabular-nums;
-          border: 1px solid rgba(255,255,255,0.06);
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 5px 13px; border-radius: 20px;
+          background: rgba(0,0,0,0.25); backdrop-filter: blur(8px);
+          font-size: 13px; font-weight: 400;
+          font-variant-numeric: tabular-nums; letter-spacing: 0.4px;
+          border: 1px solid rgba(255,255,255,0.08);
         }
 
-        .bf-feeling-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 24px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; }
+        /* Stop button */
+        .bf-btn-stop {
+          padding: 10px 28px;
+          border: 1.5px solid rgba(255,255,255,0.18); border-radius: 10px;
+          font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+          cursor: pointer; background: rgba(255,255,255,0.08); backdrop-filter: blur(8px);
+          transition: all 0.22s ease;
+        }
+        .bf-btn-stop:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
 
-        .bf-success-icon { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #5aad70, #6bc985); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 6px 20px rgba(90,173,112,0.25); }
+        /* Hint text */
+        .bf-hint {
+          font-size: 14px; font-weight: 300; font-style: italic;
+          min-height: 22px; text-align: center; margin-bottom: 24px;
+          z-index: 3; transition: color 0.6s ease, opacity 0.6s ease;
+          letter-spacing: 0.1px;
+        }
 
-        @keyframes bf-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .bf-animate-in { animation: bf-fade-up 0.45s ease-out both; }
-        .bf-animate-delay-1 { animation-delay: 0.08s; }
-        .bf-animate-delay-2 { animation-delay: 0.16s; }
-        .bf-animate-delay-3 { animation-delay: 0.24s; }
-        .bf-animate-delay-4 { animation-delay: 0.32s; }
+        /* ════════════════════════════════
+           SUCCESS / COMPLETE
+        ════════════════════════════════ */
+        .bf-success-icon {
+          width: 64px; height: 64px; border-radius: 50%;
+          background: var(--primary);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 16px;
+          box-shadow: 0 4px 18px rgba(76,102,43,0.28);
+        }
+
+        .bf-summary-chips { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; justify-content:center; }
+        .bf-chip {
+          display:flex; align-items:center; gap:5px;
+          padding:5px 12px; border-radius:100px;
+          background:var(--surface-container-high);
+          border:1px solid var(--outline-variant);
+          color:var(--on-surface-variant);
+          font-size:12px; font-weight:500;
+        }
+        .bf-chip.positive { background:var(--primary-container); color:var(--on-primary-container); border-color:rgba(76,102,43,0.18); }
+
+        .bf-diff { text-align:center; font-size:13px; margin-bottom:18px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:5px; }
+
+        /* Section divider */
+        .bf-divider { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+        .bf-divider-line { flex:1; height:1px; background:var(--outline-variant); }
+        .bf-divider-label { font-size:11px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; color:var(--outline); }
+
+        /* ════════════════════════════════
+           ANIMATIONS
+        ════════════════════════════════ */
+        @keyframes bfFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .bf-in  { animation: bfFadeUp 0.42s ease-out both; }
+        .bf-d1  { animation-delay: 0.07s; }
+        .bf-d2  { animation-delay: 0.14s; }
+        .bf-d3  { animation-delay: 0.21s; }
+        .bf-d4  { animation-delay: 0.28s; }
       `}</style>
 
       <div className="bf-root">
         <div className="bf-inner">
-          {/* Progress Bar (hidden during breathing) */}
+          {/* ── Progress Bar (hidden during breathing stage) ── */}
           {step < 6 && step !== 4 && (
             <div className="bf-progress-bar">
               {[1, 2, 3, 4, 5].map((s) => (
@@ -578,78 +785,73 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
             </div>
           )}
 
-          {/* ── STEP 1: Welcome ── */}
+          {/* ════════ STEP 1: Welcome ════════ */}
           {step === 1 && (
-            <div className="bf-animate-in" style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  background:
-                    "linear-gradient(135deg, rgba(91,147,213,0.1), rgba(107,201,133,0.1))",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 20px",
-                  fontSize: 32,
-                }}
-              >
-                🫁
+            <div className="bf-in" style={{ textAlign: "center" }}>
+              <div className="bf-welcome-icon">🫁</div>
+              <div className="bf-eyebrow" style={{ margin: "0 auto 14px" }}>
+                <span className="bf-eyebrow-dot" />
+                <p>Breathing Exercise</p>
               </div>
               <h2 className="bf-title">Guided Breathing</h2>
               <p className="bf-subtitle">
                 Take a moment to regulate your breathing and calm your body
               </p>
               <button onClick={() => setStep(2)} className="bf-btn-primary">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
                 Start Exercise
               </button>
             </div>
           )}
 
-          {/* ── STEP 2: Before ── */}
+          {/* ════════ STEP 2: Before ════════ */}
           {step === 2 && (
-            <div className="bf-animate-in">
+            <div className="bf-in">
               <h2 className="bf-title">How do you feel?</h2>
-              <p className="bf-subtitle">Rate your current stress level</p>
+              <p className="bf-subtitle">
+                Rate your current stress level before we begin
+              </p>
+
               <div
                 style={{
                   textAlign: "center",
-                  fontSize: 48,
-                  margin: "8px 0 4px",
+                  fontSize: 44,
+                  margin: "4px 0 8px",
                   lineHeight: 1,
                 }}
-                className="bf-animate-in bf-animate-delay-1"
+                className="bf-in bf-d1"
               >
                 {feelingEmoji(before)}
               </div>
               <div
-                style={{ textAlign: "center", marginBottom: 24 }}
-                className="bf-animate-in bf-animate-delay-1"
+                style={{ textAlign: "center", marginBottom: 20 }}
+                className="bf-in bf-d1"
               >
                 <span
                   className="bf-feeling-badge"
                   style={{
-                    background:
-                      before <= 3
-                        ? "rgba(90,173,112,0.1)"
-                        : before <= 6
-                          ? "rgba(217,158,46,0.1)"
-                          : "rgba(200,80,80,0.1)",
-                    color:
-                      before <= 3
-                        ? "#3a8a52"
-                        : before <= 6
-                          ? "#a07a22"
-                          : "#b54545",
+                    background: feelingColors(before).bg,
+                    color: feelingColors(before).text,
                   }}
                 >
                   {before}/10 · {feelingText(before)}
                 </span>
               </div>
+
               <div
-                style={{ padding: "0 4px", marginBottom: 28 }}
-                className="bf-animate-in bf-animate-delay-2"
+                style={{ padding: "0 4px", marginBottom: 24 }}
+                className="bf-in bf-d2"
               >
                 <input
                   type="range"
@@ -659,14 +861,13 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   onChange={(e) => setBefore(Number(e.target.value))}
                   className="bf-slider"
                   style={{
-                    background:
-                      "linear-gradient(90deg, #5aad70 0%, #d4a32a 50%, #c55 100%)",
+                    background: `linear-gradient(90deg, var(--primary) 0%, #C5A000 50%, var(--error) 100%)`,
                     color:
                       before <= 3
-                        ? "#5aad70"
+                        ? "var(--primary)"
                         : before <= 6
-                          ? "#d4a32a"
-                          : "#c55",
+                          ? "#C5A000"
+                          : "var(--error)",
                   }}
                 />
                 <div
@@ -674,67 +875,67 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     display: "flex",
                     justifyContent: "space-between",
                     fontSize: 12,
-                    color: "#aab5c0",
-                    marginTop: 8,
-                    fontWeight: 300,
+                    color: "var(--outline)",
+                    marginTop: 7,
+                    fontWeight: 400,
                   }}
                 >
                   <span>Very Calm</span>
                   <span>Overwhelmed</span>
                 </div>
               </div>
+
               <button
                 onClick={handleStartSession}
-                className="bf-btn-primary bf-animate-in bf-animate-delay-3"
+                className="bf-btn-primary bf-in bf-d3"
               >
                 Continue
               </button>
             </div>
           )}
 
-          {/* ── STEP 3: Pattern ── */}
+          {/* ════════ STEP 3: Pattern ════════ */}
           {step === 3 && (
-            <div className="bf-animate-in">
+            <div className="bf-in">
               <h2 className="bf-title">Choose a technique</h2>
               <p className="bf-subtitle">
-                Select a breathing pattern that suits you
+                Select the breathing pattern that feels right for you
               </p>
+
+              <div className="bf-divider">
+                <div className="bf-divider-line" />
+                <span className="bf-divider-label">3 patterns</span>
+                <div className="bf-divider-line" />
+              </div>
+
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: 10,
-                  marginBottom: 24,
+                  gap: 9,
+                  marginBottom: 22,
                 }}
               >
                 {Object.entries(patterns).map(([key, p], idx) => (
                   <div
                     key={key}
                     onClick={() => setPattern(key)}
-                    className={`bf-pattern-card bf-animate-in bf-animate-delay-${idx + 1} ${pattern === key ? "selected" : ""}`}
+                    className={`bf-pattern-card bf-in bf-d${idx + 1} ${pattern === key ? "selected" : ""}`}
                   >
-                    <div className="bf-pattern-icon">{patternIcons[key]}</div>
+                    <div className="bf-pattern-icon-wrap">
+                      {patternIcons[key]}
+                    </div>
                     <div>
-                      <div
-                        style={{
-                          fontWeight: 500,
-                          fontSize: 15,
-                          color: "#1a2b3c",
-                        }}
-                      >
-                        {p.label}
-                      </div>
-                      <div
-                        style={{ fontSize: 13, color: "#8a9aaa", marginTop: 2 }}
-                      >
+                      <div className="bf-pattern-title">{p.label}</div>
+                      <div className="bf-pattern-sub">
                         Inhale {p.inhale}s · Hold {p.hold}s · Exhale {p.exhale}s
                       </div>
                     </div>
                     <div className="bf-pattern-check">
                       {pattern === key && (
                         <svg
-                          width="12"
-                          height="12"
+                          width="11"
+                          height="11"
                           viewBox="0 0 12 12"
                           fill="none"
                         >
@@ -751,56 +952,91 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   </div>
                 ))}
               </div>
+
               <button
                 onClick={beginBreathing}
-                className="bf-btn-primary green bf-animate-in bf-animate-delay-4"
+                className="bf-btn-teal bf-in bf-d4"
               >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9S3 8.03 3 13a9 9 0 0 0 9 9z" />
+                  <path d="M12 8v5l3 3" />
+                </svg>
                 Begin Breathing
               </button>
             </div>
           )}
 
-          {/* ══════ STEP 4: IMMERSIVE BREATHING ══════ */}
+          {/* ════════════════════════════════════════
+              STEP 4: IMMERSIVE STAGE
+              Dark brand palette + botanical motifs
+          ════════════════════════════════════════ */}
           {step === 4 && (
-            <div
-              className="bf-breath-stage"
-              style={{ background: phaseConfig[phase].stageBg }}
-            >
-              {/* Ambient glow blobs */}
+            <div className="bf-stage" style={{ background: cfg.stageBg }}>
+              {/* Botanical dot grid */}
+              <div className="bf-stage-dots" />
+
+              {/* Botanical ring decorations — same motif as Login panel */}
               <div
+                className="bf-stage-ring"
+                style={{ width: 300, height: 300, top: -100, right: -100 }}
+              />
+              <div
+                className="bf-stage-ring"
                 style={{
-                  position: "absolute",
-                  top: -50,
-                  left: -70,
-                  width: 220,
-                  height: 220,
-                  borderRadius: "50%",
-                  background: phaseConfig[phase].glow,
-                  filter: "blur(70px)",
-                  opacity: 0.4,
-                  transition: "all 1.6s ease",
-                  pointerEvents: "none",
+                  width: 190,
+                  height: 190,
+                  top: -55,
+                  right: -55,
+                  borderColor: "rgba(255,255,255,0.04)",
                 }}
               />
               <div
+                className="bf-stage-ring"
                 style={{
-                  position: "absolute",
-                  bottom: -40,
-                  right: -60,
+                  width: 130,
+                  height: 130,
+                  bottom: -50,
+                  left: -50,
+                  borderColor: "rgba(255,255,255,0.04)",
+                }}
+              />
+
+              {/* Ambient blobs */}
+              <div
+                className="bf-blob"
+                style={{
+                  width: 220,
+                  height: 220,
+                  top: -60,
+                  left: -80,
+                  background: cfg.glow,
+                  opacity: 0.55,
+                }}
+              />
+              <div
+                className="bf-blob"
+                style={{
                   width: 180,
                   height: 180,
-                  borderRadius: "50%",
-                  background: phaseConfig[phase].glow,
-                  filter: "blur(70px)",
-                  opacity: 0.25,
-                  transition: "all 1.6s ease",
-                  pointerEvents: "none",
+                  bottom: -50,
+                  right: -60,
+                  background: cfg.glow,
+                  opacity: 0.3,
                 }}
               />
 
               {/* Timer */}
               <div style={{ marginBottom: 20, zIndex: 3 }}>
-                <div className="bf-timer-chip">
+                <div className="bf-timer-chip" style={{ color: cfg.accent }}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <circle
                       cx="6"
@@ -809,14 +1045,14 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                       stroke="currentColor"
                       strokeWidth="1"
                       fill="none"
-                      opacity="0.6"
+                      opacity="0.7"
                     />
                     <path
                       d="M6 3v3l2 1.5"
                       stroke="currentColor"
                       strokeWidth="1"
                       strokeLinecap="round"
-                      opacity="0.6"
+                      opacity="0.7"
                     />
                   </svg>
                   {formatDuration(duration)}
@@ -838,61 +1074,59 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                 ))}
               </div>
 
-              {/* ── ORB ── */}
+              {/* ORB */}
               <div
                 className="bf-orb-area"
                 style={{
                   marginBottom: 28,
                   zIndex: 2,
                   transform: `scale(${getScale()})`,
-                  transition: `transform ${phase === "Hold" ? "0.5s" : phase === "Inhale" ? "3s" : "4s"} cubic-bezier(0.4, 0, 0.2, 1)`,
+                  transition: `transform ${phase === "Hold" ? "0.5s" : phase === "Inhale" ? "3s" : "4s"} cubic-bezier(0.4,0,0.2,1)`,
                 }}
               >
-                {/* Glow */}
                 <div
                   className="bf-glow-layer"
-                  style={{ background: phaseConfig[phase].glow }}
+                  style={{ background: cfg.glow }}
                 />
-
-                {/* Progress Arc */}
                 <ProgressArc
                   count={count}
                   totalForPhase={getTotalForPhase()}
-                  color={phaseConfig[phase].arc}
+                  color={cfg.arc}
                 />
 
-                {/* Ripple Rings */}
                 {[1, 2, 3].map((n) => (
                   <div
                     key={`${rippleKey}-${n}`}
-                    className={`bf-ripple ${phase.toLowerCase()} ${n === 2 ? "r2" : n === 3 ? "r3" : ""}`}
-                    style={{
-                      border: `1.5px solid ${
-                        phase === "Inhale"
-                          ? "rgba(125,184,245,0.3)"
-                          : phase === "Hold"
-                            ? "rgba(232,200,74,0.25)"
-                            : "rgba(109,213,148,0.3)"
-                      }`,
-                    }}
+                    className={`bf-ripple ${phase.toLowerCase()}${n > 1 ? ` r${n}` : ""}`}
+                    style={{ border: `1.5px solid ${cfg.ripple}` }}
                   />
                 ))}
 
-                {/* Main Orb */}
-                <div
-                  className="bf-main-orb"
-                  style={{ background: phaseConfig[phase].bg }}
-                >
+                <div className="bf-main-orb" style={{ background: cfg.orbBg }}>
+                  {/* Orb shimmer highlight */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "10%",
+                      left: "18%",
+                      width: "38%",
+                      height: "28%",
+                      borderRadius: "50%",
+                      background: cfg.highlight,
+                      filter: "blur(14px)",
+                      pointerEvents: "none",
+                    }}
+                  />
                   <FloatingParticles phase={phase} />
 
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.75)",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: cfg.label,
                       letterSpacing: 2.5,
                       textTransform: "uppercase",
-                      marginBottom: 2,
+                      marginBottom: 4,
                       zIndex: 1,
                     }}
                   >
@@ -900,12 +1134,13 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   </div>
                   <div
                     style={{
-                      fontSize: 52,
+                      fontSize: 54,
                       fontWeight: 300,
                       color: "white",
                       lineHeight: 1,
                       zIndex: 1,
                       fontVariantNumeric: "tabular-nums",
+                      textShadow: "0 2px 16px rgba(0,0,0,0.4)",
                     }}
                   >
                     {count}
@@ -989,79 +1224,61 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
 
               {/* Hint */}
               <p
-                style={{
-                  fontSize: 14,
-                  color: "rgba(255,255,255,0.6)",
-                  fontWeight: 300,
-                  fontStyle: "italic",
-                  minHeight: 22,
-                  textAlign: "center",
-                  marginBottom: 24,
-                  zIndex: 3,
-                  transition: "color 0.6s ease",
-                }}
+                className="bf-hint"
+                style={{ color: cfg.accent, opacity: 0.72, zIndex: 3 }}
               >
                 {phase === "Inhale" && "Breathe in slowly through your nose"}
                 {phase === "Hold" && "Hold gently — no strain"}
                 {phase === "Exhale" && "Release slowly through your mouth"}
               </p>
 
-              {/* Finish */}
               <button
                 onClick={finishBreathing}
                 className="bf-btn-stop"
-                style={{ zIndex: 3 }}
+                style={{ zIndex: 3, color: cfg.accent }}
               >
                 Finish Session
               </button>
             </div>
           )}
 
-          {/* ── STEP 5: After ── */}
+          {/* ════════ STEP 5: After ════════ */}
           {step === 5 && (
-            <div className="bf-animate-in">
+            <div className="bf-in">
               <h2 className="bf-title">How do you feel now?</h2>
               <p className="bf-subtitle">
-                Rate your stress level after breathing
+                Rate your stress level after the session
               </p>
+
               <div
                 style={{
                   textAlign: "center",
-                  fontSize: 48,
-                  margin: "8px 0 4px",
+                  fontSize: 44,
+                  margin: "4px 0 8px",
                   lineHeight: 1,
                 }}
-                className="bf-animate-in bf-animate-delay-1"
+                className="bf-in bf-d1"
               >
                 {feelingEmoji(after)}
               </div>
               <div
-                style={{ textAlign: "center", marginBottom: 24 }}
-                className="bf-animate-in bf-animate-delay-1"
+                style={{ textAlign: "center", marginBottom: 20 }}
+                className="bf-in bf-d1"
               >
                 <span
                   className="bf-feeling-badge"
                   style={{
-                    background:
-                      after <= 3
-                        ? "rgba(90,173,112,0.1)"
-                        : after <= 6
-                          ? "rgba(217,158,46,0.1)"
-                          : "rgba(200,80,80,0.1)",
-                    color:
-                      after <= 3
-                        ? "#3a8a52"
-                        : after <= 6
-                          ? "#a07a22"
-                          : "#b54545",
+                    background: feelingColors(after).bg,
+                    color: feelingColors(after).text,
                   }}
                 >
                   {after}/10 · {feelingText(after)}
                 </span>
               </div>
+
               <div
                 style={{ padding: "0 4px", marginBottom: 12 }}
-                className="bf-animate-in bf-animate-delay-2"
+                className="bf-in bf-d2"
               >
                 <input
                   type="range"
@@ -1071,10 +1288,13 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   onChange={(e) => setAfter(Number(e.target.value))}
                   className="bf-slider"
                   style={{
-                    background:
-                      "linear-gradient(90deg, #5aad70 0%, #d4a32a 50%, #c55 100%)",
+                    background: `linear-gradient(90deg, var(--primary) 0%, #C5A000 50%, var(--error) 100%)`,
                     color:
-                      after <= 3 ? "#5aad70" : after <= 6 ? "#d4a32a" : "#c55",
+                      after <= 3
+                        ? "var(--primary)"
+                        : after <= 6
+                          ? "#C5A000"
+                          : "var(--error)",
                   }}
                 />
                 <div
@@ -1082,47 +1302,85 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     display: "flex",
                     justifyContent: "space-between",
                     fontSize: 12,
-                    color: "#aab5c0",
-                    marginTop: 8,
-                    fontWeight: 300,
+                    color: "var(--outline)",
+                    marginTop: 7,
+                    fontWeight: 400,
                   }}
                 >
                   <span>Very Calm</span>
                   <span>Overwhelmed</span>
                 </div>
               </div>
+
               {before !== after && (
                 <div
-                  className="bf-animate-in bf-animate-delay-3"
+                  className="bf-diff bf-in bf-d3"
                   style={{
-                    textAlign: "center",
-                    fontSize: 13,
-                    color: after < before ? "#3a8a52" : "#8a9aaa",
-                    marginBottom: 20,
-                    fontWeight: 400,
+                    color: after < before ? "var(--primary)" : "var(--outline)",
                   }}
                 >
-                  {after < before
-                    ? `↓ ${before - after} point${before - after > 1 ? "s" : ""} lower than before`
-                    : after > before
-                      ? `Stress went up by ${after - before}`
-                      : ""}
+                  {after < before ? (
+                    <>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 5v14M5 12l7 7 7-7" />
+                      </svg>
+                      {before - after} point{before - after > 1 ? "s" : ""}{" "}
+                      lower than before
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 19V5M5 12l7-7 7 7" />
+                      </svg>
+                      Stress went up by {after - before}
+                    </>
+                  )}
                 </div>
               )}
-              <button
-                onClick={saveSession}
-                className="bf-btn-primary green bf-animate-in bf-animate-delay-3"
-              >
+
+              <button onClick={saveSession} className="bf-btn-teal bf-in bf-d3">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
                 Save Session
               </button>
             </div>
           )}
 
-          {/* ── STEP 6: Complete ── */}
+          {/* ════════ STEP 6: Complete ════════ */}
           {step === 6 && (
-            <div className="bf-animate-in" style={{ textAlign: "center" }}>
-              <div className="bf-success-icon bf-animate-in">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <div className="bf-in" style={{ textAlign: "center" }}>
+              <div className="bf-success-icon bf-in">
+                <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
                   <path
                     d="M7 14.5L12 19.5L21 9.5"
                     stroke="white"
@@ -1132,33 +1390,35 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   />
                 </svg>
               </div>
-              <h2 className="bf-title bf-animate-in bf-animate-delay-1">
-                Session Complete
-              </h2>
+              <h2 className="bf-title bf-in bf-d1">Session Complete</h2>
               <p
-                className="bf-subtitle bf-animate-in bf-animate-delay-2"
-                style={{ marginBottom: 8 }}
+                className="bf-subtitle bf-in bf-d2"
+                style={{ marginBottom: 16 }}
               >
                 Great job taking time for yourself
               </p>
-              <div
-                className="bf-animate-in bf-animate-delay-2"
-                style={{
-                  display: "inline-flex",
-                  gap: 20,
-                  fontSize: 13,
-                  color: "#7a8a9a",
-                  marginBottom: 28,
-                }}
-              >
-                <span>{formatDuration(duration)} total</span>
-                <span>
-                  {before > after
-                    ? `${before} → ${after} stress`
-                    : `${before} → ${after}`}
-                </span>
+              <div className="bf-summary-chips bf-in bf-d2">
+                <div className="bf-chip">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                  {formatDuration(duration)} total
+                </div>
+                <div className={`bf-chip${before > after ? " positive" : ""}`}>
+                  {before > after ? "↓ " : before < after ? "↑ " : ""}
+                  {before} → {after} stress
+                </div>
               </div>
-              <br />
               <button
                 onClick={() => {
                   setStep(1);
@@ -1166,8 +1426,21 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   setBefore(5);
                   setAfter(5);
                 }}
-                className="bf-btn-secondary bf-animate-in bf-animate-delay-3"
+                className="bf-btn-outline bf-in bf-d3"
               >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+                </svg>
                 Start Another Session
               </button>
             </div>

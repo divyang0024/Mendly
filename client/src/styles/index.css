@@ -14,3 +14,138 @@
 .react-calendar-heatmap .color-scale-4 {
   fill: #196127;
 }
+
+/* body{
+  margin:0px;
+  padding:0px;
+} */
+
+/* ============================================
+   Material Theme – Generated from seed #63A002
+   Light scheme + risk-level semantic tokens
+   ============================================ */
+
+:root {
+  /* ── Core Colors ── */
+  --md-primary: #4C662B;
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #CDEDA3;
+  --md-on-primary-container: #354E16;
+
+  --md-secondary: #586249;
+  --md-on-secondary: #FFFFFF;
+  --md-secondary-container: #DCE7C8;
+  --md-on-secondary-container: #404A33;
+
+  --md-tertiary: #386663;
+  --md-on-tertiary: #FFFFFF;
+  --md-tertiary-container: #BCECE7;
+  --md-on-tertiary-container: #1F4E4B;
+
+  --md-error: #BA1A1A;
+  --md-on-error: #FFFFFF;
+  --md-error-container: #FFDAD6;
+  --md-on-error-container: #93000A;
+
+  /* ── Surfaces ── */
+  --md-background: #F9FAEF;
+  --md-on-background: #1A1C16;
+  --md-surface: #F9FAEF;
+  --md-on-surface: #1A1C16;
+  --md-surface-variant: #E1E4D5;
+  --md-on-surface-variant: #44483D;
+  --md-surface-dim: #DADBD0;
+  --md-surface-bright: #F9FAEF;
+  --md-surface-container-lowest: #FFFFFF;
+  --md-surface-container-low: #F3F4E9;
+  --md-surface-container: #EEEFE3;
+  --md-surface-container-high: #E8E9DE;
+  --md-surface-container-highest: #E2E3D8;
+
+  /* ── Outline ── */
+  --md-outline: #75796C;
+  --md-outline-variant: #C5C8BA;
+
+  /* ── Inverse ── */
+  --md-inverse-surface: #2F312A;
+  --md-inverse-on-surface: #F1F2E6;
+  --md-inverse-primary: #B1D18A;
+
+  /* ── Fixed ── */
+  --md-primary-fixed: #CDEDA3;
+  --md-primary-fixed-dim: #B1D18A;
+  --md-secondary-fixed: #DCE7C8;
+  --md-secondary-fixed-dim: #BFCBAD;
+  --md-tertiary-fixed: #BCECE7;
+  --md-tertiary-fixed-dim: #A0D0CB;
+
+  /* ── Shadow & Scrim ── */
+  --md-shadow: #000000;
+  --md-scrim: #000000;
+
+  /* ── Surface Tint (for elevation tinting) ── */
+  --md-surface-tint: #4C662B;
+
+  /* ── Risk Semantic Tokens ── */
+  --risk-low-bg: #CDEDA3;
+  --risk-low-text: #1F3700;
+  --risk-low-border: #B1D18A;
+
+  --risk-moderate-bg: #DCE7C8;
+  --risk-moderate-text: #2A331E;
+  --risk-moderate-border: #BFCBAD;
+
+  --risk-high-bg: #FFE0B2;
+  --risk-high-text: #7A3500;
+  --risk-high-border: #FFCC80;
+
+  --risk-crisis-bg: #FFDAD6;
+  --risk-crisis-text: #93000A;
+  --risk-crisis-border: #FFB4AB;
+
+  /* ── Elevation Shadows (Material 3 style) ── */
+  --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --md-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+  /* ── Shape ── */
+  --md-shape-xs: 4px;
+  --md-shape-sm: 8px;
+  --md-shape-md: 12px;
+  --md-shape-lg: 16px;
+  --md-shape-xl: 28px;
+  --md-shape-full: 9999px;
+
+  /* ── Typography Scale ── */
+  --md-display-large: 600 2.25rem/2.75rem 'DM Sans', sans-serif;
+  --md-display-medium: 600 2rem/2.5rem 'DM Sans', sans-serif;
+  --md-headline-large: 600 1.5rem/2rem 'DM Sans', sans-serif;
+  --md-headline-medium: 600 1.25rem/1.75rem 'DM Sans', sans-serif;
+  --md-title-large: 500 1.125rem/1.625rem 'DM Sans', sans-serif;
+  --md-title-medium: 500 0.9375rem/1.375rem 'DM Sans', sans-serif;
+  --md-body-large: 400 1rem/1.5rem 'DM Sans', sans-serif;
+  --md-body-medium: 400 0.875rem/1.375rem 'DM Sans', sans-serif;
+  --md-body-small: 400 0.75rem/1.125rem 'DM Sans', sans-serif;
+  --md-label-large: 500 0.875rem/1.25rem 'DM Sans', sans-serif;
+  --md-label-medium: 500 0.75rem/1.125rem 'DM Sans', sans-serif;
+  --md-label-small: 500 0.6875rem/1rem 'DM Sans', sans-serif;
+}
+
+/* ── Global Reset & Base ── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--md-background);
+  color: var(--md-on-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
