@@ -1,106 +1,117 @@
 export default function EscalationCard({ escalation }) {
   return (
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <div style={styles.iconWrap}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
-          </svg>
-        </div>
-        <h3 style={styles.title}>Escalation Plan</h3>
-      </div>
+    <>
+      <style>{`
+        .ec-wrap{
+          font-family:'DM Sans',sans-serif;
+          background:var(--surface-container-low);
+          border:1.5px solid var(--outline-variant);
+          border-radius:20px;
+          overflow:hidden;
+          position:relative;
+          box-shadow:0 1px 12px rgba(26,28,22,0.07);
+        }
 
-      <div style={styles.body}>
-        {/* Reason */}
-        <div style={styles.field}>
-          <span style={styles.fieldLabel}>Reason</span>
-          <p style={styles.fieldValue}>{escalation.reason}</p>
+        .ec-header{
+          display:flex;
+          align-items:center;
+          gap:10px;
+          padding:14px 18px;
+          border-bottom:1px solid var(--outline-variant);
+          background:var(--surface-container);
+        }
+
+        .ec-icon{
+          width:30px;
+          height:30px;
+          border-radius:9px;
+          background:var(--tertiary-container);
+          color:var(--on-tertiary-container);
+          display:grid;
+          place-items:center;
+        }
+
+        .ec-title{
+          font-family:'Playfair Display',serif;
+          font-size:1rem;
+          font-weight:400;
+          color:var(--on-surface);
+        }
+
+        .ec-body{
+          padding:18px;
+          display:flex;
+          flex-direction:column;
+          gap:16px;
+        }
+
+        .ec-field{
+          padding:14px 16px;
+          border-radius:14px;
+          background:var(--surface-container-high);
+          border:1px solid var(--outline-variant);
+        }
+
+        .ec-label{
+          font-size:11px;
+          letter-spacing:0.05em;
+          text-transform:uppercase;
+          color:var(--outline);
+          margin-bottom:5px;
+        }
+
+        .ec-text{
+          font-size:14px;
+          line-height:1.6;
+          color:var(--on-surface);
+        }
+
+        .ec-action{
+          padding:14px 16px;
+          border-radius:14px;
+          background:var(--primary-container);
+          border:1.5px solid rgba(76,102,43,0.25);
+        }
+
+        .ec-action-text{
+          font-size:14px;
+          color:var(--on-primary-container);
+          font-weight:500;
+          line-height:1.6;
+        }
+      `}</style>
+
+      <div className="ec-wrap">
+        <div className="ec-header">
+          <div className="ec-icon">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+
+          <span className="ec-title">Escalation Plan</span>
         </div>
 
-        {/* Recommended Action */}
-        <div style={styles.actionField}>
-          <span style={styles.fieldLabel}>Recommended Action</span>
-          <p style={styles.actionValue}>{escalation.action}</p>
+        <div className="ec-body">
+          <div className="ec-field">
+            <div className="ec-label">Reason</div>
+            <p className="ec-text">{escalation.reason}</p>
+          </div>
+
+          <div className="ec-action">
+            <div className="ec-label">Recommended Action</div>
+            <p className="ec-action-text">{escalation.action}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
-
-const styles = {
-  card: {
-    background: "var(--md-surface-container-lowest)",
-    borderRadius: "var(--md-shape-lg)",
-    boxShadow: "var(--md-elevation-1)",
-    overflow: "hidden",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "20px 24px 0",
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: "var(--md-shape-sm)",
-    background: "var(--md-tertiary-container)",
-    color: "var(--md-on-tertiary-container)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  title: {
-    font: "var(--md-headline-medium)",
-    color: "var(--md-on-surface)",
-  },
-  body: {
-    padding: "16px 24px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  field: {
-    padding: "14px 16px",
-    background: "var(--md-surface-container-low)",
-    borderRadius: "var(--md-shape-md)",
-    borderLeft: "3px solid var(--md-outline-variant)",
-  },
-  fieldLabel: {
-    font: "var(--md-label-small)",
-    color: "var(--md-on-surface-variant)",
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    display: "block",
-    marginBottom: 4,
-  },
-  fieldValue: {
-    font: "var(--md-body-large)",
-    color: "var(--md-on-surface)",
-  },
-  actionField: {
-    padding: "14px 16px",
-    background: "var(--md-primary-container)",
-    borderRadius: "var(--md-shape-md)",
-    borderLeft: "3px solid var(--md-primary)",
-  },
-  actionValue: {
-    font: "var(--md-body-large)",
-    color: "var(--md-on-primary-container)",
-    fontWeight: 500,
-  },
-};

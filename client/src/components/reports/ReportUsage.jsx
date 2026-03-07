@@ -1,157 +1,196 @@
 export default function ReportUsage({ usage }) {
   const entries = Object.entries(usage || {});
-
-  if (entries.length === 0) {
-    return (
-      <div style={styles.card}>
-        <div style={styles.emptyInner}>
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--md-outline-variant)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M18 20V10M12 20V4M6 20v-6" />
-          </svg>
-          <p style={styles.emptyText}>No coping usage yet</p>
-        </div>
-      </div>
-    );
-  }
-
   const maxCount = Math.max(...entries.map(([, c]) => c), 1);
 
   return (
-    <div style={styles.card}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerIcon}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M18 20V10M12 20V4M6 20v-6" />
-          </svg>
-        </div>
-        <h3 style={styles.title}>Coping Usage</h3>
-      </div>
+    <>
+      <style>{`
+        .ru-wrap {
+          font-family: 'DM Sans', sans-serif;
+          background: var(--surface-container-low);
+          border: 1.5px solid var(--outline-variant);
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+          box-shadow: 0 1px 12px rgba(26,28,22,0.07);
+          color: var(--on-surface);
+          animation: ruIn 0.4s ease-out both;
+        }
+        .ru-wrap::before {
+          content: '';
+          position: absolute;
+          top: -45px; right: -45px;
+          width: 140px; height: 140px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(56,102,99,0.06) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        @keyframes ruIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-      {/* Bars */}
-      <div style={styles.barList}>
-        {entries.map(([tool, count]) => (
-          <div key={tool} style={styles.barItem}>
-            <div style={styles.barLabel}>
-              <span style={styles.toolName}>{tool}</span>
-              <span style={styles.toolCount}>{count}</span>
+        .ru-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 18px;
+          border-bottom: 1px solid var(--outline-variant);
+          background: var(--surface-container);
+        }
+        .ru-header-left { display: flex; align-items: center; gap: 10px; }
+        .ru-icon {
+          width: 30px; height: 30px;
+          border-radius: 9px;
+          background: var(--secondary-container);
+          color: var(--on-secondary-container);
+          display: grid; place-items: center;
+        }
+        .ru-icon svg { width: 14px; height: 14px; }
+        .ru-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1rem;
+          font-weight: 400;
+          color: var(--on-surface);
+        }
+        .ru-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 10px;
+          border-radius: 100px;
+          background: var(--surface-container-highest);
+          border: 1px solid var(--outline-variant);
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--outline);
+        }
+
+        .ru-body {
+          padding: 18px 18px 20px;
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .ru-sub {
+          font-size: 13px;
+          color: var(--outline);
+          font-weight: 300;
+          line-height: 1.5;
+          margin: 0 0 4px;
+        }
+
+        .ru-bar-row { display: flex; flex-direction: column; gap: 6px; }
+        .ru-bar-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+        }
+        .ru-bar-name {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--on-surface);
+          text-transform: capitalize;
+        }
+        .ru-bar-count {
+          font-size: 12px;
+          color: var(--outline);
+          font-variant-numeric: tabular-nums;
+        }
+        .ru-bar-track {
+          width: 100%;
+          height: 7px;
+          border-radius: 4px;
+          background: var(--surface-container-highest);
+          overflow: hidden;
+        }
+        .ru-bar-fill {
+          height: 100%;
+          border-radius: 4px;
+          background: var(--primary);
+          transition: width 0.7s cubic-bezier(0.34, 1.1, 0.64, 1);
+        }
+
+        .ru-empty {
+          padding: 40px 16px;
+          text-align: center;
+          color: var(--outline);
+          font-size: 13px;
+          font-weight: 300;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+        .ru-empty svg { opacity: 0.4; }
+      `}</style>
+      <div className="ru-wrap">
+        <div className="ru-header">
+          <div className="ru-header-left">
+            <div className="ru-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 20V10M12 20V4M6 20v-6" />
+              </svg>
             </div>
-            <div style={styles.trackBg}>
-              <div
-                style={{
-                  ...styles.trackFill,
-                  width: `${Math.max((count / maxCount) * 100, 4)}%`,
-                }}
-              />
-            </div>
+            <span className="ru-title">Coping Usage</span>
           </div>
-        ))}
+          <div className="ru-badge">{entries.length} tools</div>
+        </div>
+
+        <div className="ru-body">
+          {entries.length === 0 ? (
+            <div className="ru-empty">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--outline-variant)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 20V10M12 20V4M6 20v-6" />
+              </svg>
+              No coping usage recorded this week.
+            </div>
+          ) : (
+            <>
+              <p className="ru-sub">
+                Tools you used most during conversations this week.
+              </p>
+              {entries
+                .sort(([, a], [, b]) => b - a)
+                .map(([tool, count], i) => (
+                  <div
+                    className="ru-bar-row"
+                    key={tool}
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                  >
+                    <div className="ru-bar-meta">
+                      <span className="ru-bar-name">{tool}</span>
+                      <span className="ru-bar-count">{count}×</span>
+                    </div>
+                    <div className="ru-bar-track">
+                      <div
+                        className="ru-bar-fill"
+                        style={{
+                          width: `${Math.max((count / maxCount) * 100, 4)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-
-const styles = {
-  card: {
-    background: "var(--md-surface-container-lowest)",
-    borderRadius: "var(--md-shape-lg)",
-    boxShadow: "var(--md-elevation-1)",
-    overflow: "hidden",
-  },
-
-  /* Empty */
-  emptyInner: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px 24px",
-    gap: 10,
-  },
-  emptyText: {
-    font: "var(--md-body-medium)",
-    color: "var(--md-on-surface-variant)",
-  },
-
-  /* Header */
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "20px 24px 0",
-  },
-  headerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: "var(--md-shape-sm)",
-    background: "var(--md-secondary-container)",
-    color: "var(--md-on-secondary-container)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  title: {
-    font: "var(--md-headline-medium)",
-    color: "var(--md-on-surface)",
-  },
-
-  /* Bar list */
-  barList: {
-    padding: "16px 24px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-  },
-  barItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  },
-  barLabel: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "baseline",
-  },
-  toolName: {
-    font: "var(--md-body-medium)",
-    color: "var(--md-on-surface)",
-    fontWeight: 500,
-  },
-  toolCount: {
-    font: "var(--md-label-medium)",
-    color: "var(--md-on-surface-variant)",
-    fontVariantNumeric: "tabular-nums",
-  },
-  trackBg: {
-    width: "100%",
-    height: 8,
-    borderRadius: "var(--md-shape-full)",
-    background: "var(--md-surface-container-high)",
-    overflow: "hidden",
-  },
-  trackFill: {
-    height: "100%",
-    borderRadius: "var(--md-shape-full)",
-    background: "var(--md-primary)",
-    transition: "width 0.4s ease",
-  },
-};

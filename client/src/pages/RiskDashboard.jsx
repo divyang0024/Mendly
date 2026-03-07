@@ -381,26 +381,28 @@ const styles = {
 
   /* Assessment Section */
   assessmentCard: {
-    background: "var(--md-surface-container-lowest)",
-    borderRadius: "var(--md-shape-lg)",
-    boxShadow: "var(--md-elevation-2)",
+    background: "var(--surface-container-low)",
+    border: "1px solid var(--outline-variant)",
+    borderRadius: 20,
+    boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
     overflow: "hidden",
   },
   assessmentInner: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 0,
+    display: "grid",
+    gridTemplateColumns: "220px 1fr",
+    alignItems: "stretch",
   },
   badgeColumn: {
-    flex: "0 0 auto",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "32px 40px",
-    gap: 12,
-    borderRight: "1px solid var(--md-outline-variant)",
-    minWidth: 180,
+    gap: 14,
+
+    padding: "28px 26px",
+
+    background: "var(--surface-container)",
+    borderRight: "1px solid var(--outline-variant)",
   },
   assessmentLabel: {
     font: "var(--md-label-medium)",
@@ -409,8 +411,7 @@ const styles = {
     letterSpacing: "0.05em",
   },
   signalsColumn: {
-    flex: 1,
-    minWidth: 280,
+    padding: "18px 22px",
   },
 
   /* Divider */

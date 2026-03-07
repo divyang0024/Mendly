@@ -7,14 +7,11 @@ import ProfileCard from "../components/insights/ProfileCard";
 import CheckinHeatmap from "../components/checkin/CheckinHeatmap";
 import { Link } from "react-router-dom";
 
-const Tag = ({ c = "primary", children }) => (
-  <span className={`i-tag i-tag-${c}`}>{children}</span>
-);
-
-const Card = ({ tag, tagColor = "primary", children, className = "" }) => (
-  <div className={`i-card ${className}`}>
-    {tag && <Tag c={tagColor}>{tag}</Tag>}
-    <div className="i-card-body">{children}</div>
+// Lightweight section label — replaces the messy per-card Tag approach
+const SectionLabel = ({ emoji, children }) => (
+  <div className="i-section-label">
+    {emoji && <span>{emoji}</span>}
+    <span>{children}</span>
   </div>
 );
 
@@ -71,7 +68,7 @@ export default function Insights() {
         /* ── HERO ── */
         .i-hero {
           position:relative; overflow:hidden; background:var(--p);
-          padding: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 4vw, 2.5rem);
+          padding: clamp(2rem,4vw,3rem) clamp(1.25rem,4vw,2.5rem);
           min-height: 220px; display:flex; flex-direction:column; justify-content:center;
         }
         .i-hero::before {
@@ -102,24 +99,21 @@ export default function Insights() {
         @media(max-width:640px){.i-hero-chips{display:none;}}
         @media(max-width:520px){.i-hero-title{font-size:1.55rem;}}
 
-        /* ── TAGS ── */
-        .i-tag {
-          display: inline-flex; align-items: center;
-          padding: 2px 9px; border-radius: 100px;
-          font-size: 10px; font-weight: 600;
-          letter-spacing: .05em; text-transform: uppercase;
-          margin-bottom: 8px;
+        /* ── SECTION LABEL ── */
+        .i-section-label {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 11px; font-weight: 600;
+          letter-spacing: .07em; text-transform: uppercase;
+          color: var(--ol);
+          margin-bottom: 10px;
         }
-        .i-tag-primary   { background: var(--pc); color: var(--opc); }
-        .i-tag-secondary { background: var(--sc); color: var(--osc); }
-        .i-tag-tertiary  { background: var(--tc); color: var(--otc); }
 
         /* ── CARD ── */
         .i-card {
           background: var(--sl);
           border: 1.5px solid var(--olv);
           border-radius: 16px;
-          padding: 14px;
+          padding: 16px;
           position: relative; overflow: hidden;
           transition: border-color .2s, box-shadow .2s;
           min-width: 0;
@@ -137,77 +131,90 @@ export default function Insights() {
         }
         .i-card-body { position: relative; z-index: 1; }
 
-        /* ── DASHBOARD GRID ── */
-        /*
-          Priority order (least scroll, most value first):
-          ROW A — Quick stats: Profile | TrendCard | VolatilityCard   (3 equal cols)
-          ROW B — Main chart:  EmotionTrendGraph                       (full width)
-          ROW C — Analysis:    EmotionPieChart (5) | WeeklyReport (7)
-          ROW D — History:     CheckinHeatmap                          (full width)
-        */
-        .i-grid {
-          display: grid;
-          grid-template-columns: repeat(12, 1fr);
-          grid-template-rows: auto;
-          gap: 12px;
-          padding: 16px 20px 48px;
+        /* ── HEATMAP CARD — no extra padding, the component owns its own chrome ── */
+        .i-card-flush {
+          border: 1.5px solid var(--olv);
+          border-radius: 16px;
+          overflow: hidden;
+          transition: border-color .2s, box-shadow .2s;
+          min-width: 0;
+        }
+        .i-card-flush:hover {
+          border-color: rgba(76,102,43,.22);
+          box-shadow: 0 3px 16px rgba(26,28,22,.06);
+        }
+
+        /* ══════════════════════════════════════════
+           LAYOUT — Three clear sections
+
+           SECTION 1  "At a Glance"
+             3 equal stat cards
+
+           SECTION 2  "Your Emotions"
+             TrendGraph (7/12)  |  PieChart (5/12)
+
+           SECTION 3  "Activity"
+             Heatmap full-width (no double-wrap)
+             WeeklyReport full-width below
+        ══════════════════════════════════════════ */
+        .i-content {
           max-width: 1080px;
           margin: 0 auto;
+          padding: 24px 20px 56px;
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
         }
 
-        /* Row A */
-        .i-profile    { grid-column: span 4; }
-        .i-trendcard  { grid-column: span 4; }
-        .i-volatility { grid-column: span 4; }
+        /* ── Section shell ── */
+        .i-section { display: flex; flex-direction: column; }
 
-        /* Row B */
-        .i-trendgraph { grid-column: span 12; }
+        /* ── Row helpers ── */
+        .i-row {
+          display: grid;
+          gap: 12px;
+        }
 
-        /* Row C */
-        .i-pie        { grid-column: span 5; }
-        .i-weekly     { grid-column: span 7; }
+        /* Section 1 — 3 equal columns */
+        .i-row-thirds {
+          grid-template-columns: repeat(3, 1fr);
+        }
 
-        /* Row D */
-        .i-heatmap    { grid-column: span 12; }
+        /* Section 2 — 7/12 + 5/12 */
+        .i-row-charts {
+          grid-template-columns: 7fr 5fr;
+          align-items: stretch;
+        }
+
+        /* Section 3 — full width items stacked */
+        .i-row-full {
+          grid-template-columns: 1fr;
+        }
 
         /* ── RESPONSIVE ── */
-        /* Tablet */
         @media (max-width: 860px) {
-          .i-grid { grid-template-columns: repeat(6, 1fr); gap: 10px; }
-          .i-profile    { grid-column: span 6; }
-          .i-trendcard  { grid-column: span 3; }
-          .i-volatility { grid-column: span 3; }
-          .i-trendgraph { grid-column: span 6; }
-          .i-pie        { grid-column: span 6; }
-          .i-weekly     { grid-column: span 6; }
-          .i-heatmap    { grid-column: span 6; }
-          .i-heatmap-pad{ display:none; }
+          .i-row-thirds { grid-template-columns: 1fr 1fr; }
+          .i-row-charts  { grid-template-columns: 1fr; }
         }
-
-        /* Mobile */
         @media (max-width: 520px) {
-          .i-grid { grid-template-columns: 1fr; gap: 10px; padding: 12px 12px 40px; }
-          .i-profile, .i-trendcard, .i-volatility,
-          .i-trendgraph, .i-pie, .i-weekly, .i-heatmap { grid-column: span 1; }
-          .i-heatmap-pad { display: none; }
-          .i-header { padding: 12px 14px; }
-          .i-header-title { font-size: 1.1rem; }
+          .i-content { padding: 16px 12px 40px; gap: 24px; }
+          .i-row-thirds { grid-template-columns: 1fr; }
           .i-nav { padding: 0 14px; }
         }
 
-        /* Fade-up entrance */
+        /* Staggered fade-up entrance */
         @keyframes iFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        .i-profile    { animation: iFadeUp .35s .00s both; }
-        .i-trendcard  { animation: iFadeUp .35s .05s both; }
-        .i-volatility { animation: iFadeUp .35s .10s both; }
-        .i-trendgraph { animation: iFadeUp .35s .15s both; }
-        .i-pie        { animation: iFadeUp .35s .20s both; }
-        .i-weekly     { animation: iFadeUp .35s .25s both; }
-        .i-heatmap    { animation: iFadeUp .35s .30s both; }
+        .i-anim-1 { animation: iFadeUp .35s .05s both; }
+        .i-anim-2 { animation: iFadeUp .35s .10s both; }
+        .i-anim-3 { animation: iFadeUp .35s .15s both; }
+        .i-anim-4 { animation: iFadeUp .35s .20s both; }
+        .i-anim-5 { animation: iFadeUp .35s .25s both; }
+        .i-anim-6 { animation: iFadeUp .35s .30s both; }
+        .i-anim-7 { animation: iFadeUp .35s .35s both; }
       `}</style>
 
       <div className="i-root">
-        {/* Nav */}
+        {/* ── Nav ── */}
         <nav className="i-nav">
           <div className="i-nav-l">
             <Link to="/" className="i-back">
@@ -233,12 +240,11 @@ export default function Insights() {
           </div>
         </nav>
 
-        {/* Hero */}
+        {/* ── Hero ── */}
         <div className="i-hero">
           <div className="i-hero-ring r1" />
           <div className="i-hero-ring r2" />
           <div className="i-hero-dots" />
-
           <div className="i-hero-inner">
             <div className="i-hero-text">
               <div className="i-hero-eyebrow">
@@ -254,7 +260,6 @@ export default function Insights() {
                 Patterns, trends and clarity drawn from your emotional history
               </p>
             </div>
-
             <div className="i-hero-chips">
               {[
                 {
@@ -324,43 +329,66 @@ export default function Insights() {
           </div>
         </div>
 
-        {/* Dashboard */}
-        <div className="i-grid">
-          {/* ── Row A: Quick-glance stats ── */}
-          <Card tag="Profile" tagColor="primary" className="i-profile">
-            <ProfileCard />
-          </Card>
+        {/* ── Dashboard ── */}
+        <div className="i-content">
+          {/* ─── SECTION 1: At a Glance ─── */}
+          <div className="i-section i-anim-1">
+            <SectionLabel emoji="✦">At a Glance</SectionLabel>
+            <div className="i-row i-row-thirds">
+              <div className="i-card i-anim-1">
+                <div className="i-card-body">
+                  <ProfileCard />
+                </div>
+              </div>
+              <div className="i-card i-anim-2">
+                <div className="i-card-body">
+                  <TrendCard />
+                </div>
+              </div>
+              <div className="i-card i-anim-3">
+                <div className="i-card-body">
+                  <VolatilityCard />
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Card tag="Trend" tagColor="secondary" className="i-trendcard">
-            <TrendCard />
-          </Card>
+          {/* ─── SECTION 2: Your Emotions ─── */}
+          <div className="i-section i-anim-4">
+            <SectionLabel emoji="✦">Your Emotions</SectionLabel>
+            <div className="i-row i-row-charts">
+              <div className="i-card">
+                <div className="i-card-body">
+                  <EmotionTrendGraph />
+                </div>
+              </div>
+              <div className="i-card">
+                <div className="i-card-body">
+                  <EmotionPieChart />
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Card tag="Stability" tagColor="tertiary" className="i-volatility">
-            <VolatilityCard />
-          </Card>
-
-          {/* ── Row B: Main chart ── */}
-          <Card
-            tag="Emotion Journey"
-            tagColor="tertiary"
-            className="i-trendgraph"
-          >
-            <EmotionTrendGraph />
-          </Card>
-
-          {/* ── Row C: Analysis pair ── */}
-          <Card tag="Breakdown" tagColor="secondary" className="i-pie">
-            <EmotionPieChart />
-          </Card>
-
-          <Card tag="Weekly Summary" tagColor="tertiary" className="i-weekly">
-            <WeeklyReport />
-          </Card>
-
-          {/* ── Row D: Heatmap (7 cols) ── */}
-          <Card tag="Check-in Heatmap" tagColor="primary" className="i-heatmap">
-            <CheckinHeatmap />
-          </Card>
+          {/* ─── SECTION 3: Activity ─── */}
+          <div className="i-section i-anim-5">
+            <SectionLabel emoji="✦">Activity</SectionLabel>
+            <div className="i-row i-row-full" style={{ gap: 12 }}>
+              {/*
+                CheckinHeatmap already ships with its own header, body and footer —
+                wrap it in i-card-flush (border + radius only, zero padding)
+                so it looks integrated without double-chrome.
+              */}
+              <div className="i-card-flush i-anim-6">
+                <CheckinHeatmap />
+              </div>
+              <div className="i-card i-anim-7">
+                <div className="i-card-body">
+                  <WeeklyReport />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

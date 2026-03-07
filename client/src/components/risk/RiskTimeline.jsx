@@ -12,286 +12,216 @@ export default function RiskTimeline({ refresh }) {
     fetchEvents();
   }, [refresh]);
 
-  const levelConfig = {
+  const levelMeta = {
     low: {
-      bg: "var(--risk-low-bg)",
-      text: "var(--risk-low-text)",
-      border: "var(--risk-low-border)",
-      dot: "#4C662B",
+      color: "#4C662B",
+      bg: "#CDEDA3",
+      text: "#354E16",
     },
     moderate: {
-      bg: "var(--risk-moderate-bg)",
-      text: "var(--risk-moderate-text)",
-      border: "var(--risk-moderate-border)",
-      dot: "#586249",
+      color: "#586249",
+      bg: "#DCE7C8",
+      text: "#404A33",
     },
     high: {
-      bg: "var(--risk-high-bg)",
-      text: "var(--risk-high-text)",
-      border: "var(--risk-high-border)",
-      dot: "#B45000",
+      color: "#B45000",
+      bg: "#FFDBB6",
+      text: "#7A2E00",
     },
     crisis: {
-      bg: "var(--risk-crisis-bg)",
-      text: "var(--risk-crisis-text)",
-      border: "var(--risk-crisis-border)",
-      dot: "#BA1A1A",
+      color: "#BA1A1A",
+      bg: "#FFDAD6",
+      text: "#93000A",
     },
   };
 
   return (
-    <div style={styles.card}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerIcon}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+    <>
+      <style>{`
+        .rt-wrap{
+          font-family:'DM Sans',sans-serif;
+          background:var(--surface-container-low);
+          border:1.5px solid var(--outline-variant);
+          border-radius:20px;
+          overflow:hidden;
+          box-shadow:0 1px 12px rgba(26,28,22,0.07);
+        }
+
+        .rt-header{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:14px 18px;
+          border-bottom:1px solid var(--outline-variant);
+          background:var(--surface-container);
+        }
+
+        .rt-title{
+          font-family:'Playfair Display',serif;
+          font-size:1rem;
+          color:var(--on-surface);
+        }
+
+        .rt-count{
+          font-size:11px;
+          padding:3px 10px;
+          border-radius:100px;
+          background:var(--surface-container-high);
+          border:1px solid var(--outline-variant);
+        }
+
+        .rt-body{
+          padding:18px;
+          display:flex;
+          flex-direction:column;
+          gap:20px;
+          max-height:480px;
+          overflow-y:auto;
+        }
+
+        .rt-item{
+          display:flex;
+          gap:14px;
+        }
+
+        .rt-rail{
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          width:16px;
+        }
+
+        .rt-dot{
+          width:12px;
+          height:12px;
+          border-radius:50%;
+          flex-shrink:0;
+        }
+
+        .rt-line{
+          width:2px;
+          flex:1;
+          background:var(--outline-variant);
+          margin-top:4px;
+        }
+
+        .rt-content{
+          flex:1;
+          display:flex;
+          flex-direction:column;
+          gap:6px;
+        }
+
+        .rt-meta{
+          display:flex;
+          align-items:center;
+          gap:8px;
+          flex-wrap:wrap;
+        }
+
+        .rt-chip{
+          font-size:10.5px;
+          font-weight:600;
+          padding:2px 8px;
+          border-radius:100px;
+          letter-spacing:0.05em;
+        }
+
+        .rt-time{
+          font-size:11px;
+          color:var(--outline);
+        }
+
+        .rt-emotion{
+          font-size:12px;
+          color:var(--on-surface-variant);
+        }
+
+        .rt-intervention{
+          font-size:11px;
+          padding:3px 9px;
+          border-radius:100px;
+          background:var(--tertiary-container);
+          color:var(--on-tertiary-container);
+          width:fit-content;
+        }
+
+        .rt-text{
+          font-size:13px;
+          line-height:1.5;
+          color:var(--on-surface);
+        }
+
+        .rt-empty{
+          text-align:center;
+          padding:40px 0;
+          font-size:13px;
+          color:var(--outline);
+        }
+      `}</style>
+
+      <div className="rt-wrap">
+        <div className="rt-header">
+          <div className="rt-title">Recent Risk Events</div>
+          <div className="rt-count">{events.length}</div>
         </div>
-        <h3 style={styles.title}>Recent Risk Events</h3>
-        <span style={styles.badge}>{events.length}</span>
-      </div>
 
-      {/* Empty State */}
-      {events.length === 0 && (
-        <div style={styles.emptyState}>
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--md-outline-variant)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <p style={styles.emptyText}>No risk events yet</p>
-        </div>
-      )}
+        <div className="rt-body">
+          {events.length === 0 && (
+            <div className="rt-empty">No risk events yet</div>
+          )}
 
-      {/* Timeline */}
-      <div style={styles.timeline}>
-        {events.map((e, i) => {
-          const cfg = levelConfig[e.level] || levelConfig.low;
-          const isLast = i === events.length - 1;
+          {events.map((e, i) => {
+            const meta = levelMeta[e.level] || levelMeta.low;
+            const last = i === events.length - 1;
 
-          return (
-            <div key={e._id} style={styles.timelineItem}>
-              {/* Vertical line + dot */}
-              <div style={styles.rail}>
-                <div
-                  style={{
-                    ...styles.dot,
-                    background: cfg.dot,
-                    boxShadow: `0 0 0 3px ${cfg.bg}`,
-                  }}
-                />
-                {!isLast && <div style={styles.line} />}
-              </div>
-
-              {/* Content */}
-              <div style={styles.eventContent}>
-                <div style={styles.eventHeader}>
-                  <span
+            return (
+              <div key={e._id} className="rt-item">
+                <div className="rt-rail">
+                  <div
+                    className="rt-dot"
                     style={{
-                      ...styles.levelChip,
-                      background: cfg.bg,
-                      color: cfg.text,
-                      border: `1px solid ${cfg.border}`,
+                      background: meta.color,
+                      boxShadow: `0 0 0 3px ${meta.bg}`,
                     }}
-                  >
-                    {e.level.toUpperCase()}
-                  </span>
-                  <span style={styles.timestamp}>
-                    {new Date(e.createdAt).toLocaleString()}
-                  </span>
+                  />
+                  {!last && <div className="rt-line" />}
                 </div>
 
-                {e.emotion && (
-                  <p style={styles.emotion}>
-                    Emotion:{" "}
-                    <span style={styles.emotionValue}>{e.emotion}</span>
-                  </p>
-                )}
-
-                {e.intervention && (
-                  <div style={styles.interventionChip}>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                <div className="rt-content">
+                  <div className="rt-meta">
+                    <span
+                      className="rt-chip"
+                      style={{
+                        background: meta.bg,
+                        color: meta.text,
+                      }}
                     >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
-                    {e.intervention}
-                  </div>
-                )}
+                      {e.level.toUpperCase()}
+                    </span>
 
-                <p style={styles.eventText}>{e.text}</p>
+                    <span className="rt-time">
+                      {new Date(e.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {e.emotion && (
+                    <div className="rt-emotion">
+                      Emotion: <strong>{e.emotion}</strong>
+                    </div>
+                  )}
+
+                  {e.intervention && (
+                    <div className="rt-intervention">{e.intervention}</div>
+                  )}
+
+                  <div className="rt-text">{e.text}</div>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-
-const styles = {
-  card: {
-    background: "var(--md-surface-container-lowest)",
-    borderRadius: "var(--md-shape-lg)",
-    boxShadow: "var(--md-elevation-1)",
-    padding: "24px",
-    maxHeight: 520,
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-    flexShrink: 0,
-  },
-  headerIcon: {
-    color: "var(--md-primary)",
-  },
-  title: {
-    font: "var(--md-headline-medium)",
-    color: "var(--md-on-surface)",
-    flex: 1,
-  },
-  badge: {
-    font: "var(--md-label-small)",
-    background: "var(--md-surface-container-high)",
-    color: "var(--md-on-surface-variant)",
-    padding: "2px 10px",
-    borderRadius: "var(--md-shape-full)",
-  },
-
-  /* Empty */
-  emptyState: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px 0",
-    gap: 12,
-  },
-  emptyText: {
-    font: "var(--md-body-medium)",
-    color: "var(--md-on-surface-variant)",
-  },
-
-  /* Timeline */
-  timeline: {
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-    paddingRight: 4,
-  },
-  timelineItem: {
-    display: "flex",
-    gap: 16,
-    minHeight: 0,
-  },
-  rail: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: 16,
-    flexShrink: 0,
-    paddingTop: 4,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: "50%",
-    flexShrink: 0,
-  },
-  line: {
-    width: 2,
-    flex: 1,
-    background: "var(--md-outline-variant)",
-    marginTop: 4,
-    marginBottom: 4,
-    borderRadius: 1,
-  },
-
-  /* Event content */
-  eventContent: {
-    flex: 1,
-    paddingBottom: 20,
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  },
-  eventHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    flexWrap: "wrap",
-  },
-  levelChip: {
-    font: "var(--md-label-small)",
-    padding: "2px 10px",
-    borderRadius: "var(--md-shape-full)",
-    letterSpacing: "0.04em",
-    fontWeight: 600,
-  },
-  timestamp: {
-    font: "var(--md-body-small)",
-    color: "var(--md-outline)",
-  },
-  emotion: {
-    font: "var(--md-body-medium)",
-    color: "var(--md-on-surface-variant)",
-  },
-  emotionValue: {
-    fontWeight: 600,
-    color: "var(--md-on-surface)",
-  },
-  interventionChip: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    font: "var(--md-body-small)",
-    color: "var(--md-tertiary)",
-    background: "var(--md-tertiary-container)",
-    padding: "4px 12px",
-    borderRadius: "var(--md-shape-full)",
-    alignSelf: "flex-start",
-  },
-  eventText: {
-    font: "var(--md-body-medium)",
-    color: "var(--md-on-surface)",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-    lineHeight: "1.45",
-  },
-};
