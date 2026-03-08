@@ -27,9 +27,13 @@ const generateHighlights = ({
     highlights.push("Your emotional state has remained stable.");
   }
 
-  // Top emotion
-  if (topEmotion && topEmotion !== "neutral") {
-    highlights.push(`You frequently experience ${topEmotion}.`);
+  // Top emotion — only if we actually have real data
+  if (topEmotion) {
+    if (topEmotion !== "neutral") {
+      highlights.push(`You frequently experience ${topEmotion}.`);
+    } else {
+      highlights.push("Your most common emotional state is neutral.");
+    }
   }
 
   // Best tool
@@ -43,8 +47,7 @@ const generateHighlights = ({
   const mostUsed = Object.entries(copingUsage || {}).sort(
     (a, b) => b[1] - a[1],
   )[0];
-
-  if (mostUsed && mostUsed[0]) {
+  if (mostUsed?.[0]) {
     highlights.push(`You rely most on ${mostUsed[0]} for coping.`);
   }
 
@@ -90,8 +93,9 @@ export const buildLongTermSummary = async (userId) => {
 
   /* ==============================
      2. AVG EFFECTIVENESS (ALL TOOLS)
+     — averages effectivenessScore across every tool session.
+     Returned as avgMood (out of 5).
   ============================== */
-
   const [copingAgg, activationAgg, reframingAgg, affirmationAgg, breathingAgg] =
     await Promise.all([
       CopingSession.aggregate([
@@ -116,7 +120,7 @@ export const buildLongTermSummary = async (userId) => {
       ]),
     ]);
 
-  const allAverages = [
+  const allEffectivenessScores = [
     copingAgg[0]?.avg,
     activationAgg[0]?.avg,
     reframingAgg[0]?.avg,
@@ -124,36 +128,72 @@ export const buildLongTermSummary = async (userId) => {
     breathingAgg[0]?.avg,
   ].filter((v) => typeof v === "number");
 
+  // avgMood = average effectivenessScore across all tool sessions (out of 5)
+  // null when no sessions exist so UI shows "—" instead of 0
   const avgMood =
-    allAverages.length > 0
-      ? allAverages.reduce((a, b) => a + b, 0) / allAverages.length
-      : 0;
+    allEffectivenessScores.length > 0
+      ? Number(
+          (
+            allEffectivenessScores.reduce((a, b) => a + b, 0) /
+            allEffectivenessScores.length
+          ).toFixed(2),
+        )
+      : null;
 
   /* ==============================
-     3. TOP EMOTION
+     4. TOP EMOTION
+     Groups messages by calendar day first, picks the dominant
+     emotion per day, then counts how many days each emotion won.
+     This prevents a single chatty day from skewing the result.
+
+     Fix: $nin instead of duplicate $ne keys (JS silently drops one).
   ============================== */
   const emotionAgg = await Message.aggregate([
-    { $match: { userId: objectId, emotion: { $exists: true } } },
+    {
+      $match: {
+        userId: objectId,
+        emotion: { $exists: true, $nin: [null, "", "unknown", "neutral"] },
+      },
+    },
+    /* bucket each message into a calendar day */
     {
       $group: {
-        _id: "$emotion",
+        _id: {
+          day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          emotion: "$emotion",
+        },
         count: { $sum: 1 },
       },
     },
-    { $sort: { count: -1 } },
+    /* keep only the dominant emotion per day */
+    { $sort: { "_id.day": 1, count: -1 } },
+    {
+      $group: {
+        _id: "$_id.day",
+        topEmotion: { $first: "$_id.emotion" },
+      },
+    },
+    /* count how many days each emotion was dominant */
+    {
+      $group: {
+        _id: "$topEmotion",
+        days: { $sum: 1 },
+      },
+    },
+    { $sort: { days: -1 } },
     { $limit: 1 },
   ]);
 
-  const topEmotion = emotionAgg.length ? emotionAgg[0]._id : "neutral";
+  // null means "no emotion data" — UI shows "—" instead of fake "neutral"
+  const topEmotion = emotionAgg.length > 0 ? emotionAgg[0]._id : null;
 
   /* ==============================
-     4. BEST TOOL (ALL)
+     5. BEST TOOL (highest avg effectiveness)
   ============================== */
-
   const toolScores = [];
 
   const pushScore = (name, agg) => {
-    if (agg[0]?.avg !== undefined) {
+    if (agg[0]?.avg != null) {
       toolScores.push({ tool: name, avg: agg[0].avg });
     }
   };
@@ -166,12 +206,11 @@ export const buildLongTermSummary = async (userId) => {
 
   toolScores.sort((a, b) => b.avg - a.avg);
 
-  const bestTool = toolScores.length ? toolScores[0].tool : "none";
+  const bestTool = toolScores.length > 0 ? toolScores[0].tool : null;
 
   /* ==============================
-     5. TREND (based on coping sessions)
+     6. TREND (based on coping sessions)
   ============================== */
-
   const last20 = await CopingSession.find({ userId: objectId })
     .sort({ createdAt: -1 })
     .limit(20)
@@ -202,7 +241,7 @@ export const buildLongTermSummary = async (userId) => {
   };
 
   /* ==============================
-     6. TRIGGERS
+     7. TRIGGERS
   ============================== */
   const texts = await Message.find({ userId: objectId })
     .sort({ createdAt: -1 })
@@ -210,16 +249,44 @@ export const buildLongTermSummary = async (userId) => {
     .select("text")
     .lean();
 
-  const wordCount = {};
+  const stopWords = new Set([
+    "that",
+    "this",
+    "with",
+    "have",
+    "from",
+    "they",
+    "been",
+    "were",
+    "will",
+    "your",
+    "what",
+    "when",
+    "just",
+    "like",
+    "about",
+    "there",
+    "their",
+    "would",
+    "could",
+    "should",
+    "really",
+    "think",
+    "feel",
+    "know",
+    "going",
+    "want",
+  ]);
 
+  const wordCount = {};
   texts.forEach((m) => {
     const words = m.text
       .toLowerCase()
       .replace(/[^\w\s]/g, "")
       .split(/\s+/);
-
     words.forEach((w) => {
       if (w.length < 4) return;
+      if (stopWords.has(w)) return;
       wordCount[w] = (wordCount[w] || 0) + 1;
     });
   });
@@ -230,19 +297,18 @@ export const buildLongTermSummary = async (userId) => {
     .map(([keyword, count]) => ({ keyword, count }));
 
   /* ==============================
-     7. COPING USAGE
+     8. COPING USAGE
   ============================== */
-
-  const copingUsage = {};
-
-  copingUsage["coping"] = copingCount;
-  copingUsage["activation"] = activationCount;
-  copingUsage["reframing"] = reframingCount;
-  copingUsage["affirmation"] = affirmationCount;
-  copingUsage["breathing"] = breathingCount;
+  const copingUsage = {
+    coping: copingCount,
+    activation: activationCount,
+    reframing: reframingCount,
+    affirmation: affirmationCount,
+    breathing: breathingCount,
+  };
 
   /* ==============================
-     8. GENERATE HIGHLIGHTS
+     9. GENERATE HIGHLIGHTS
   ============================== */
   const highlights = generateHighlights({
     trend,
@@ -258,9 +324,9 @@ export const buildLongTermSummary = async (userId) => {
   return {
     summary: {
       totalSessions,
-      avgMood,
-      topEmotion,
-      bestTool,
+      avgMood, // avg effectivenessScore across all tool sessions (out of 5)
+      topEmotion, // null if no emotion data exists
+      bestTool, // null if no tool sessions exist
     },
     trend,
     triggers,
