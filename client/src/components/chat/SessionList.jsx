@@ -7,189 +7,25 @@ export default function SessionList({
 }) {
   return (
     <>
-      <style>{`
-        .session-sidebar {
-          width: 260px;
-          min-width: 260px;
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          background: #EEEFE3;
-          border-right: 1px solid #C5C8BA;
-          font-family: 'DM Sans', sans-serif;
-          overflow: hidden;
-        }
+      <style>{slStyles}</style>
 
-        /* Header */
-        .session-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 16px 14px 12px;
-          border-bottom: 1px solid #C5C8BA;
-          flex-shrink: 0;
-        }
-        .session-header-logo {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .session-logo-icon {
-          width: 28px; height: 28px;
-          background: #4C662B;
-          border-radius: 7px;
-          display: grid;
-          place-items: center;
-        }
-        .session-logo-icon svg { width: 15px; height: 15px; fill: #fff; }
-        .session-logo-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 1rem;
-          font-weight: 600;
-          color: #4C662B;
-        }
-
-        /* New session button */
-        .btn-new-session {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          width: 100%;
-          margin: 12px 0 8px;
-          padding: 10px 14px;
-          background: #4C662B;
-          color: #fff;
-          border: none;
-          border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s;
-          flex-shrink: 0;
-        }
-        .btn-new-session:hover { background: #354E16; transform: translateY(-1px); }
-        .btn-new-session svg { width: 15px; height: 15px; }
-
-        .session-label {
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: #75796C;
-          padding: 0 14px 6px;
-          flex-shrink: 0;
-        }
-
-        /* Sessions scroll area */
-        .session-list {
-          flex: 1;
-          overflow-y: auto;
-          padding: 0 8px 12px;
-        }
-        .session-list::-webkit-scrollbar { width: 4px; }
-        .session-list::-webkit-scrollbar-track { background: transparent; }
-        .session-list::-webkit-scrollbar-thumb { background: #C5C8BA; border-radius: 4px; }
-
-        /* Individual session row */
-        .session-item {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          border-radius: 10px;
-          padding: 8px 10px;
-          margin-bottom: 2px;
-          cursor: pointer;
-          transition: background 0.15s;
-          background: transparent;
-        }
-        .session-item:hover { background: #E1E4D5; }
-        .session-item.is-active { background: #CDEDA3; }
-
-        .session-dot {
-          width: 7px; height: 7px;
-          border-radius: 50%;
-          background: #C5C8BA;
-          flex-shrink: 0;
-          transition: background 0.2s;
-        }
-        .session-item.is-active .session-dot { background: #4C662B; }
-
-        .session-title {
-          flex: 1;
-          font-size: 13px;
-          color: #44483D;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          line-height: 1.4;
-          min-width: 0;
-        }
-        .session-item.is-active .session-title { color: #354E16; font-weight: 500; }
-
-        .btn-delete-session {
-          width: 26px; height: 26px;
-          flex-shrink: 0;
-          background: none;
-          border: none;
-          border-radius: 6px;
-          display: grid;
-          place-items: center;
-          cursor: pointer;
-          color: #75796C;
-          opacity: 0;
-          transition: opacity 0.15s, background 0.15s, color 0.15s;
-        }
-        .session-item:hover .btn-delete-session { opacity: 1; }
-        .btn-delete-session:hover { background: #FFDAD6; color: #BA1A1A; }
-        .btn-delete-session svg { width: 13px; height: 13px; }
-
-        /* Empty state */
-        .session-empty {
-          text-align: center;
-          padding: 32px 16px;
-          color: #75796C;
-          font-size: 13px;
-          line-height: 1.6;
-        }
-        .session-empty svg {
-          width: 32px; height: 32px;
-          color: #C5C8BA;
-          margin: 0 auto 10px;
-          display: block;
-        }
-
-        /* Collapsed / mobile */
-        @media (max-width: 700px) {
-          .session-sidebar {
-            width: 200px;
-            min-width: 200px;
-          }
-        }
-        @media (max-width: 500px) {
-          .session-sidebar {
-            display: none;
-          }
-        }
-      `}</style>
-
-      <aside className="session-sidebar">
+      {/* No wrapper <aside> — Chat.jsx owns the sidebar shell */}
+      <div className="sl-inner">
         {/* Header */}
-        <div className="session-header">
-          <div className="session-header-logo">
-            <div className="session-logo-icon">
+        <div className="sl-header">
+          <div className="sl-logo">
+            <div className="sl-logo-icon">
               <svg viewBox="0 0 24 24">
                 <path d="M17 8C8 10 5.9 16.17 3.82 21H5.71C5.71 21 6 20.5 6.47 19.57C9 20.5 11.7 20.69 14.09 20C20.22 18.18 22.5 9.51 17 8ZM6.81 18C7.72 16 10.5 13.5 14.5 13.5C13 15 10 17.5 6.81 18Z" />
               </svg>
             </div>
-            <span className="session-logo-name">Verdant</span>
+            <span className="sl-logo-name">Mendly</span>
           </div>
         </div>
 
         {/* New session */}
-        <div style={{ padding: "0 8px", flexShrink: 0 }}>
-          <button className="btn-new-session" onClick={onNew}>
+        <div className="sl-new-wrap">
+          <button className="sl-btn-new" onClick={onNew}>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -205,12 +41,12 @@ export default function SessionList({
           </button>
         </div>
 
-        <div className="session-label">Recent chats</div>
+        <div className="sl-label">Recent chats</div>
 
         {/* Session list */}
-        <div className="session-list">
+        <div className="sl-list">
           {sessions.length === 0 ? (
-            <div className="session-empty">
+            <div className="sl-empty">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -229,18 +65,18 @@ export default function SessionList({
             sessions.map((s) => (
               <div
                 key={s._id}
-                className={`session-item${activeId === s._id ? " is-active" : ""}`}
+                className={`sl-item${activeId === s._id ? " is-active" : ""}`}
               >
-                <span className="session-dot" />
+                <span className="sl-dot" />
                 <div
-                  className="session-title"
+                  className="sl-title"
                   onClick={() => onSelect(s._id)}
                   title={s.title}
                 >
                   {s.title || "Untitled session"}
                 </div>
                 <button
-                  className="btn-delete-session"
+                  className="sl-btn-delete"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(s._id);
@@ -266,7 +102,125 @@ export default function SessionList({
             ))
           )}
         </div>
-      </aside>
+      </div>
     </>
   );
 }
+
+const slStyles = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── INNER SHELL — fills whatever Chat.jsx gives it ── */
+.sl-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--surface-container, #EEEFE3);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+
+/* ── HEADER ── */
+.sl-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--outline-variant, #C5C8BA);
+  flex-shrink: 0;
+}
+.sl-logo { display: flex; align-items: center; gap: 8px; }
+.sl-logo-icon {
+  width: 28px; height: 28px;
+  background: var(--primary, #4C662B);
+  border-radius: 7px;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.sl-logo-icon svg { width: 15px; height: 15px; fill: #fff; }
+.sl-logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 600;
+  color: var(--primary, #4C662B);
+}
+
+/* ── NEW SESSION BUTTON ── */
+.sl-new-wrap { padding: 10px 8px 4px; flex-shrink: 0; }
+.sl-btn-new {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 10px 14px;
+  background: var(--primary, #4C662B); color: #fff;
+  border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
+}
+.sl-btn-new:hover { background: #354E16; transform: translateY(-1px); }
+.sl-btn-new svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── LABEL ── */
+.sl-label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--outline, #75796C);
+  padding: 8px 14px 6px; flex-shrink: 0;
+}
+
+/* ── LIST SCROLL AREA ── */
+.sl-list {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  padding: 0 8px 12px;
+}
+.sl-list::-webkit-scrollbar { width: 4px; }
+.sl-list::-webkit-scrollbar-track { background: transparent; }
+.sl-list::-webkit-scrollbar-thumb {
+  background: var(--outline-variant, #C5C8BA); border-radius: 4px;
+}
+
+/* ── SESSION ITEM ── */
+.sl-item {
+  display: flex; align-items: center; gap: 6px;
+  border-radius: 10px; padding: 8px 10px; margin-bottom: 2px;
+  cursor: pointer; transition: background 0.15s;
+  background: transparent;
+}
+.sl-item:hover { background: #E1E4D5; }
+.sl-item.is-active { background: var(--primary-container, #CDEDA3); }
+
+.sl-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--outline-variant, #C5C8BA);
+  flex-shrink: 0; transition: background 0.2s;
+}
+.sl-item.is-active .sl-dot { background: var(--primary, #4C662B); }
+
+.sl-title {
+  flex: 1; font-size: 13px;
+  color: var(--on-surface-variant, #44483D);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.4; min-width: 0;
+}
+.sl-item.is-active .sl-title { color: var(--on-primary-container, #354E16); font-weight: 500; }
+
+.sl-btn-delete {
+  width: 26px; height: 26px; flex-shrink: 0;
+  background: none; border: none; border-radius: 6px;
+  display: grid; place-items: center;
+  cursor: pointer; color: var(--outline, #75796C);
+  opacity: 0; transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.sl-item:hover .sl-btn-delete { opacity: 1; }
+.sl-btn-delete:hover { background: #FFDAD6; color: #BA1A1A; }
+.sl-btn-delete svg { width: 13px; height: 13px; }
+
+/* ── EMPTY STATE ── */
+.sl-empty {
+  text-align: center; padding: 32px 16px;
+  color: var(--outline, #75796C);
+  font-size: 13px; line-height: 1.6;
+}
+.sl-empty svg {
+  width: 32px; height: 32px;
+  color: var(--outline-variant, #C5C8BA);
+  margin: 0 auto 10px; display: block;
+}
+`;

@@ -105,7 +105,7 @@ export default function ReframingPage() {
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </Link>
-            <span className="rp-brand">Verdant</span>
+            <span className="rp-brand">Mendly</span>
           </div>
           <div className="rp-breadcrumb">
             <span>Exercises</span>

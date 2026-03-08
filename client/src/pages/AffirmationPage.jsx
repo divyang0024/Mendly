@@ -100,7 +100,7 @@ export default function AffirmationPage() {
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </Link>
-            <span className="ap-brand">Verdant</span>
+            <span className="ap-brand">Mendly</span>
           </div>
           <div className="ap-breadcrumb">
             <span>Exercises</span>

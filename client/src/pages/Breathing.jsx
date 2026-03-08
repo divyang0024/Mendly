@@ -295,7 +295,7 @@ export default function Breathing() {
                 <path d="M17 8C8 10 5.9 16.17 3.82 21H5.71C5.71 21 6 20.5 6.47 19.57C9 20.5 11.7 20.69 14.09 20C20.22 18.18 22.5 9.51 17 8ZM6.81 18C7.72 16 10.5 13.5 14.5 13.5C13 15 10 17.5 6.81 18Z" />
               </svg>
             </div>
-            <span className="nav-logo-name">Verdant</span>
+            <span className="nav-logo-name">Mendly</span>
           </a>
           <span className="nav-breadcrumb">/ Breathing</span>
         </header>

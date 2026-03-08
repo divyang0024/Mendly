@@ -630,7 +630,7 @@ export default function Register() {
                   <path d="M17 8C8 10 5.9 16.17 3.82 21H5.71C5.71 21 6 20.5 6.47 19.57C9 20.5 11.7 20.69 14.09 20C20.22 18.18 22.5 9.51 17 8ZM6.81 18C7.72 16 10.5 13.5 14.5 13.5C13 15 10 17.5 6.81 18Z" />
                 </svg>
               </div>
-              <span className="logo-name">Verdant</span>
+              <span className="logo-name">Mendly</span>
             </div>
 
             {/* Progress dots */}
@@ -833,7 +833,6 @@ export default function Register() {
                 )}
               </div>
 
-
               {/* Submit */}
               <button type="submit" className="btn-submit" disabled={loading}>
                 {loading ? (
@@ -862,8 +861,6 @@ export default function Register() {
               </button>
             </form>
 
-          
-
             <p className="signin-note">
               Already have an account? <a href="/login">Sign in</a>
             </p>
@@ -885,7 +882,7 @@ export default function Register() {
           <div className="panel-content">
             <div className="panel-eyebrow">
               <div className="panel-eyebrow-dot" />
-              <span className="panel-eyebrow-text">Join Verdant</span>
+              <span className="panel-eyebrow-text">Join Mendly</span>
             </div>
 
             <h2 className="panel-headline">
@@ -900,22 +897,6 @@ export default function Register() {
 
             <div className="feature-list">
               {[
-                {
-                  icon: (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                  ),
-                  title: "Bank-level security",
-                  sub: "End-to-end encryption on all data",
-                },
                 {
                   icon: (
                     <svg
@@ -949,25 +930,6 @@ export default function Register() {
                   ),
                   title: "Instant setup",
                   sub: "Ready in less than 60 seconds",
-                },
-                {
-                  icon: (
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  ),
-                  title: "Team collaboration",
-                  sub: "Invite members with one click",
                 },
               ].map(({ icon, title, sub }) => (
                 <div className="feature-item" key={title}>

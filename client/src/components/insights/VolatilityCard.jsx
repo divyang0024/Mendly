@@ -47,6 +47,8 @@ const getVolMeta = (vol) => {
       color: "#BA1A1A",
       bg: "#FFDAD6",
       text: "#93000A",
+      trackColor: "#FFDAD6",
+      glowColor: "rgba(186,26,26,0.18)",
       label: "Fluctuating",
       Icon: FluctuatingIcon,
       note: "Your emotional state has been shifting frequently. Grounding exercises may help.",
@@ -56,6 +58,8 @@ const getVolMeta = (vol) => {
       color: "#A16207",
       bg: "#FEF3C7",
       text: "#78350F",
+      trackColor: "#FEF3C7",
+      glowColor: "rgba(161,98,7,0.15)",
       label: "Variable",
       Icon: VariableIcon,
       note: "Some emotional variation detected. This is normal — stay mindful.",
@@ -64,6 +68,8 @@ const getVolMeta = (vol) => {
     color: "#4C662B",
     bg: "#CDEDA3",
     text: "#354E16",
+    trackColor: "#CDEDA3",
+    glowColor: "rgba(76,102,43,0.15)",
     label: "Stable",
     Icon: StableIcon,
     note: "Your emotional state has been steady and consistent. Great work.",
@@ -72,26 +78,44 @@ const getVolMeta = (vol) => {
 
 export default function VolatilityCard() {
   const [vol, setVol] = useState(null);
+  const [animated, setAnimated] = useState(false);
 
   /* ── Original logic — unchanged ── */
   useEffect(() => {
     getVolatility().then((res) => setVol(res.data.volatility));
   }, []);
+  /* ── End original logic ── */
+
+  useEffect(() => {
+    if (vol !== null) requestAnimationFrame(() => setAnimated(true));
+  }, [vol]);
 
   if (vol === null) return null;
-  /* ── End original logic ── */
 
   const stable = 100 - vol;
   const meta = getVolMeta(vol);
   const { Icon } = meta;
-  const arcRadius = 54;
-  const arcCirc = 2 * Math.PI * arcRadius;
-  const arcOffset = arcCirc - (stable / 100) * arcCirc;
+
+  /* Semi-circle arc (half donut) — 180° sweep */
+  const R = 72;
+  const cx = 100;
+  const cy = 100;
+  const circumference = Math.PI * R; // half circle
+  const fillOffset = circumference - (stable / 100) * circumference;
+
+  /* Needle angle: -180° = 0%, 0° = 100% */
+  const needleAngle = -180 + (stable / 100) * 180;
+  const needleRad = (needleAngle * Math.PI) / 180;
+  const nx = cx + (R - 10) * Math.cos(needleRad);
+  const ny = cy + (R - 10) * Math.sin(needleRad);
 
   return (
     <>
-      <style>{vcStyles(arcCirc, arcOffset)}</style>
+      <style>{vcStyles}</style>
       <div className="vc-wrap">
+        {/* Decorative blob */}
+        <div className="vc-blob" style={{ background: meta.glowColor }} />
+
         {/* ── Header ── */}
         <div className="vc-header">
           <div className="vc-header-left">
@@ -117,7 +141,7 @@ export default function VolatilityCard() {
             style={{
               background: meta.bg,
               color: meta.text,
-              borderColor: `${meta.color}30`,
+              borderColor: `${meta.color}40`,
             }}
           >
             <span className="vc-badge-icon" style={{ color: meta.color }}>
@@ -127,79 +151,168 @@ export default function VolatilityCard() {
           </div>
         </div>
 
-        <div className="vc-body">
-          {/* Arc gauge */}
-          <div className="vc-arc-wrap">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle
-                cx="60"
-                cy="60"
-                r={arcRadius}
-                fill="none"
-                stroke="var(--surface-container-highest)"
-                strokeWidth="9"
-              />
-              <circle
-                cx="60"
-                cy="60"
-                r={arcRadius}
-                fill="none"
-                stroke={meta.color}
-                strokeWidth="9"
-                strokeLinecap="round"
-                strokeDasharray={arcCirc}
-                strokeDashoffset={arcOffset}
-                className="vc-arc-path"
-                transform="rotate(-90 60 60)"
-              />
-            </svg>
-            <div className="vc-arc-center">
-              <div className="vc-arc-pct" style={{ color: meta.color }}>
-                {stable}%
-              </div>
-              <div className="vc-arc-label" style={{ color: meta.text }}>
-                Stable
-              </div>
-            </div>
-          </div>
+        {/* ── Gauge section ── */}
+        <div className="vc-gauge-section">
+          <div className="vc-gauge-wrap">
+            <svg viewBox="0 20 200 100" className="vc-gauge-svg">
+              <defs>
+                <linearGradient
+                  id="vcTrackGrad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset="0%" stopColor="#BA1A1A" stopOpacity="0.25" />
+                  <stop offset="50%" stopColor="#A16207" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#4C662B" stopOpacity="0.25" />
+                </linearGradient>
+                <linearGradient
+                  id="vcFillGrad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset="0%" stopColor="#BA1A1A" />
+                  <stop offset="50%" stopColor="#A16207" />
+                  <stop offset="100%" stopColor={meta.color} />
+                </linearGradient>
+                <filter id="vcGlow">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
 
-          {/* Details */}
-          <div className="vc-details">
-            <div
-              className="vc-detail-badge"
-              style={{ background: meta.bg, color: meta.text }}
-            >
-              <span className="vc-detail-icon" style={{ color: meta.color }}>
-                <Icon />
+              {/* Track (background arc) */}
+              <path
+                d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+                fill="none"
+                stroke="url(#vcTrackGrad)"
+                strokeWidth="11"
+                strokeLinecap="round"
+              />
+
+              {/* Fill arc — animated */}
+              <path
+                d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+                fill="none"
+                stroke="url(#vcFillGrad)"
+                strokeWidth="11"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={animated ? fillOffset : circumference}
+                className="vc-arc-fill"
+                filter="url(#vcGlow)"
+              />
+
+              {/* Tick marks */}
+              {[0, 25, 50, 75, 100].map((pct) => {
+                const a = ((-180 + pct * 1.8) * Math.PI) / 180;
+                const r1 = R + 4;
+                const r2 = R + 13;
+                return (
+                  <line
+                    key={pct}
+                    x1={cx + r1 * Math.cos(a)}
+                    y1={cy + r1 * Math.sin(a)}
+                    x2={cx + r2 * Math.cos(a)}
+                    y2={cy + r2 * Math.sin(a)}
+                    stroke="var(--outline-variant)"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+
+              {/* Needle */}
+              <line
+                x1={cx}
+                y1={cy}
+                x2={animated ? nx : cx - (R - 10)}
+                y2={animated ? ny : cy}
+                stroke={meta.color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="vc-needle"
+              />
+              <circle cx={cx} cy={cy} r="5" fill={meta.color} />
+              <circle
+                cx={cx}
+                cy={cy}
+                r="3"
+                fill="var(--surface-container-low)"
+              />
+
+              {/* End labels */}
+              <text
+                x={cx - R - 2}
+                y={cy + 18}
+                textAnchor="middle"
+                className="vc-gauge-label"
+              >
+                0
+              </text>
+              <text
+                x={cx + R + 2}
+                y={cy + 18}
+                textAnchor="middle"
+                className="vc-gauge-label"
+              >
+                100
+              </text>
+            </svg>
+
+            {/* Center readout */}
+            <div className="vc-readout">
+              <span className="vc-readout-pct" style={{ color: meta.color }}>
+                {stable}
               </span>
-              {meta.label}
-            </div>
-            <p className="vc-note">{meta.note}</p>
-            <div className="vc-stat-row">
-              <div className="vc-stat">
-                <div className="vc-stat-val">{stable}%</div>
-                <div className="vc-stat-lbl">Stability</div>
-              </div>
-              <div className="vc-stat">
-                <div className="vc-stat-val">{vol}%</div>
-                <div className="vc-stat-lbl">Fluctuation</div>
-              </div>
+              <span className="vc-readout-unit">%</span>
+              <span className="vc-readout-sub" style={{ color: meta.text }}>
+                stability
+              </span>
             </div>
           </div>
+        </div>
+
+        {/* ── Stats row ── */}
+        <div className="vc-stats-row">
+          <div className="vc-stat" style={{ borderColor: `${meta.color}20` }}>
+            <div className="vc-stat-val" style={{ color: meta.color }}>
+              {stable}%
+            </div>
+            <div className="vc-stat-lbl">Stable</div>
+          </div>
+          <div className="vc-stat-divider" />
+          <div className="vc-stat">
+            <div className="vc-stat-val">{vol}%</div>
+            <div className="vc-stat-lbl">Fluctuation</div>
+          </div>
+        </div>
+
+        {/* ── Note ── */}
+        <div className="vc-note-row">
+          <div
+            className="vc-note-icon"
+            style={{ background: meta.bg, color: meta.color }}
+          >
+            <Icon />
+          </div>
+          <p className="vc-note">{meta.note}</p>
         </div>
       </div>
     </>
   );
 }
 
-const vcStyles = (arcCirc, arcOffset) => `
+const vcStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 
 :root {
   --primary:#4C662B;--primary-container:#CDEDA3;--on-primary-container:#354E16;
-  --secondary:#586249;--secondary-container:#DCE7C8;--on-secondary-container:#404A33;
   --on-surface:#1A1C16;--on-surface-variant:#44483D;
   --outline:#75796C;--outline-variant:#C5C8BA;
   --surface-container-low:#F3F4E9;--surface-container:#EEEFE3;
@@ -215,71 +328,150 @@ const vcStyles = (arcCirc, arcOffset) => `
   box-shadow:0 1px 12px rgba(26,28,22,0.07);
   color:var(--on-surface);
 }
-.vc-wrap::before {
-  content:''; position:absolute;
-  top:-48px; right:-48px; width:150px; height:150px; border-radius:50%;
-  background:radial-gradient(circle,rgba(76,102,43,0.06) 0%,transparent 70%);
-  pointer-events:none; z-index:0;
+
+/* Soft radial blob behind gauge */
+.vc-blob {
+  position:absolute; top:-10px; left:50%;
+  transform:translateX(-50%);
+  width:260px; height:180px; border-radius:50%;
+  filter:blur(36px); pointer-events:none; z-index:0;
+  transition:background 0.6s ease;
 }
 
 /* ── HEADER ── */
 .vc-header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:14px 18px;
+  gap:10px; padding:14px 18px;
   border-bottom:1px solid var(--outline-variant);
   background:var(--surface-container);
-  position:relative; z-index:1;
+  position:relative; z-index:1; flex-wrap:wrap;
 }
-.vc-header-left { display:flex; align-items:center; gap:10px; }
+.vc-header-left { display:flex; align-items:center; gap:10px; min-width:0; }
 .vc-icon {
-  width:30px; height:30px; border-radius:9px;
-  display:grid; place-items:center; flex-shrink:0;
+  width:30px; height:30px; border-radius:9px; flex-shrink:0;
+  display:grid; place-items:center;
 }
 .vc-icon svg { width:14px; height:14px; }
 .vc-title {
   font-family:'Playfair Display',serif;
-  font-size:1rem; font-weight:400; color:var(--on-surface);
+  font-size:1rem; font-weight:400; color:var(--on-surface); white-space:nowrap;
 }
 .vc-badge {
   display:inline-flex; align-items:center; gap:5px;
   padding:3px 10px 3px 7px; border-radius:100px;
-  font-size:11.5px; font-weight:500; border:1.5px solid;
+  font-size:11.5px; font-weight:500; border:1.5px solid; flex-shrink:0;
 }
-.vc-badge-icon { width:13px; height:13px; display:flex; align-items:center; }
+.vc-badge-icon { width:13px; height:13px; display:flex; align-items:center; flex-shrink:0; }
 .vc-badge-icon svg { width:13px; height:13px; }
 
-/* ── BODY ── */
-.vc-body {
-  padding:20px 18px; position:relative; z-index:1;
-  display:flex; align-items:center; gap:20px;
+/* ── GAUGE ── */
+.vc-gauge-section {
+  padding:24px 18px 8px;
+  position:relative; z-index:1;
+  display:flex; justify-content:center;
+}
+.vc-gauge-wrap {
+  position:relative; width:100%; max-width:300px;
+}
+.vc-gauge-svg { display:block; width:100%; overflow:visible; }
+.vc-gauge-label {
+  font-family:'DM Sans',sans-serif; font-size:9px;
+  fill:var(--outline); font-weight:400;
 }
 
-/* Arc gauge */
-.vc-arc-wrap { flex-shrink:0; position:relative; width:120px; height:120px; display:grid; place-items:center; }
-.vc-arc-center { position:absolute; text-align:center; }
-.vc-arc-pct { font-family:'Playfair Display',serif; font-size:1.7rem; font-weight:400; line-height:1; }
-.vc-arc-label { font-size:10.5px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; opacity:0.65; margin-top:2px; }
-@keyframes vcArc { from{stroke-dashoffset:${arcCirc.toFixed(2)}} to{stroke-dashoffset:${arcOffset.toFixed(2)}} }
-.vc-arc-path { animation:vcArc 1.1s cubic-bezier(0.34,1.1,0.64,1) both; }
-
-/* Details panel */
-.vc-details { flex:1; }
-.vc-detail-badge {
-  display:inline-flex; align-items:center; gap:7px;
-  padding:6px 13px 6px 9px; border-radius:100px;
-  font-size:13.5px; font-weight:500; margin-bottom:10px;
+/* Arc fill animation */
+@keyframes vcArcFill {
+  from { stroke-dashoffset: var(--vc-circ, 226.2); }
+  to   { stroke-dashoffset: var(--vc-offset, 0); }
 }
-.vc-detail-icon { width:16px; height:16px; display:flex; align-items:center; }
-.vc-detail-icon svg { width:16px; height:16px; }
-.vc-note { font-size:13px; color:var(--on-surface-variant); font-weight:300; line-height:1.6; margin-bottom:12px; }
-.vc-stat-row { display:flex; gap:8px; }
-.vc-stat { padding:7px 13px; border-radius:10px; background:var(--surface-container-high); border:1px solid var(--outline-variant); }
-.vc-stat-val { font-family:'Playfair Display',serif; font-size:1rem; font-weight:400; color:var(--on-surface); line-height:1; }
-.vc-stat-lbl { font-size:10px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; color:var(--outline); margin-top:2px; }
+.vc-arc-fill {
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.34,1.1,0.64,1);
+}
 
-@media(max-width:400px) {
+/* Needle animation */
+.vc-needle {
+  transform-origin: 100px 100px;
+  transition: x2 1.1s cubic-bezier(0.34,1.1,0.64,1),
+              y2 1.1s cubic-bezier(0.34,1.1,0.64,1);
+}
+
+/* Centre readout — sits below the arc */
+.vc-readout {
+  display:flex; align-items:baseline; justify-content:center;
+  gap:3px; margin-top:-10px;
+  flex-wrap:wrap;
+}
+.vc-readout-pct {
+  font-family:'Playfair Display',serif;
+  font-size:3rem; font-weight:400; line-height:1;
+}
+.vc-readout-unit {
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem; opacity:0.55;
+}
+.vc-readout-sub {
+  width:100%; text-align:center;
+  font-size:11px; font-weight:500;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--outline); margin-top:2px;
+}
+
+/* ── STATS ROW ── */
+.vc-stats-row {
+  display:flex; align-items:stretch;
+  margin:16px 18px 0;
+  border:1.5px solid var(--outline-variant);
+  border-radius:14px; overflow:hidden;
+  background:var(--surface-container);
+  position:relative; z-index:1;
+}
+.vc-stat {
+  flex:1; padding:12px 10px; text-align:center;
+  transition:background 0.15s;
+}
+.vc-stat:hover { background:var(--surface-container-high); }
+.vc-stat-divider {
+  width:1px; background:var(--outline-variant); flex-shrink:0;
+}
+.vc-stat-val {
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem; font-weight:400;
+  color:var(--on-surface); line-height:1; margin-bottom:3px;
+}
+.vc-stat-lbl {
+  font-size:10px; font-weight:500; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--outline);
+}
+
+/* ── NOTE ROW ── */
+.vc-note-row {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:14px 18px 18px;
+  position:relative; z-index:1;
+}
+.vc-note-icon {
+  width:28px; height:28px; border-radius:8px; flex-shrink:0;
+  display:grid; place-items:center; margin-top:1px;
+}
+.vc-note-icon svg { width:14px; height:14px; }
+.vc-note {
+  font-size:13px; color:var(--on-surface-variant);
+  font-weight:300; line-height:1.65;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px) {
+  .vc-gauge-section { padding:18px 12px 6px; }
+  .vc-gauge-wrap { max-width:260px; }
+  .vc-readout-pct { font-size:2.5rem; }
+  .vc-stats-row { margin:12px 14px 0; }
+  .vc-note-row { padding:12px 14px 16px; }
+}
+
+@media(max-width:360px) {
   .vc-wrap { border-radius:16px; }
-  .vc-body { flex-direction:column; align-items:flex-start; }
-  .vc-arc-wrap { width:100px; height:100px; }
+  .vc-gauge-wrap { max-width:220px; }
+  .vc-readout-pct { font-size:2.1rem; }
+  .vc-stat-val { font-size:1.1rem; }
 }
 `;

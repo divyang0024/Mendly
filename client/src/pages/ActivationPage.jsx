@@ -101,7 +101,7 @@ export default function ActivationPage() {
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </Link>
-            <span className="avp-brand">Verdant</span>
+            <span className="avp-brand">Mendly</span>
           </div>
           <div className="avp-breadcrumb">
             <span>Exercises</span>

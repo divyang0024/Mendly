@@ -495,7 +495,7 @@ export default function Login() {
           .login-panel {
             padding: 2.5rem 2rem 2rem;
             min-height: 240px;
-            justify-content: flex-start;
+            justify-content:center;
           }
           .panel-stats { margin-bottom: 0; }
           .ring-1 { width: 260px; height: 260px; top: -80px; right: -80px; }
@@ -546,7 +546,7 @@ export default function Login() {
             organised and ready for you.
           </p>
 
-          <div className="panel-stats">
+          {/* <div className="panel-stats">
             <div className="stat">
               <span className="stat-num">12k+</span>
               <span className="stat-label">Active users</span>
@@ -559,7 +559,7 @@ export default function Login() {
               <span className="stat-num">4.9★</span>
               <span className="stat-label">Avg. rating</span>
             </div>
-          </div>
+          </div> */}
         </aside>
 
         {/* ── Right form panel ── */}
@@ -572,7 +572,7 @@ export default function Login() {
                   <path d="M17 8C8 10 5.9 16.17 3.82 21H5.71C5.71 21 6 20.5 6.47 19.57C9 20.5 11.7 20.69 14.09 20C20.22 18.18 22.5 9.51 17 8ZM6.81 18C7.72 16 10.5 13.5 14.5 13.5C13 15 10 17.5 6.81 18Z" />
                 </svg>
               </div>
-              <span className="logo-name">Verdant</span>
+              <span className="logo-name">Mendly</span>
             </div>
 
             <h2 className="form-heading">
@@ -739,8 +739,6 @@ export default function Login() {
                 )}
               </button>
             </form>
-
-            
           </div>
 
           {/* Corner decoration */}

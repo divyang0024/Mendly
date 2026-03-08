@@ -231,7 +231,7 @@ export default function Grounding() {
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </Link>
-            <span className="gp-nav-brand">Verdant</span>
+            <span className="gp-nav-brand">Mendly</span>
           </div>
           <div className="gp-breadcrumb">
             <span>Exercises</span>
