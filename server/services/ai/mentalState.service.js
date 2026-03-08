@@ -58,13 +58,25 @@ If crisis = true:
 ────────────────────────
 🧘 STEP 4 — INTERVENTION SELECTION
 
-Choose only if NOT crisis.
+Only trigger if crisis_flag = false.
 
-• breathing → panic, fast thoughts, anxiety spike
-• grounding → dissociation, overwhelm, racing mind
-• reframing → negative self-beliefs, guilt, self-blame
-• affirmation → low confidence, discouragement
-• null → normal conversation, no intervention needed
+Analyze the user's message for emotional tone, cognitive patterns, and behavioral cues.
+Select the single most contextually appropriate intervention:
+
+INTERVENTION   → TRIGGER CONDITIONS
+───────────────────────────────────────────────────────
+breathing      → acute anxiety, panic, hyperventilation cues, racing thoughts
+grounding      → dissociation, sensory disconnection, overwhelm, derailed thinking
+reframing      → cognitive distortions, self-blame, guilt spirals, negative core beliefs
+affirmation    → low self-worth, discouragement, imposter feelings, seeking validation
+activation     → low energy, apathy, avoidance patterns, withdrawal, motivational deficit
+null           → neutral/casual conversation, no distress signals detected
+
+SELECTION RULES:
+- Return exactly one value from: breathing | grounding | reframing | affirmation | activation | null
+- If multiple triggers overlap, select the most dominant emotional state
+- Default to null when confidence is low
+- Never select an intervention during an active crisis — escalate instead
 
 ────────────────────────
 OUTPUT STRICT JSON:

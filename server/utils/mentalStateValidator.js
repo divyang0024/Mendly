@@ -22,6 +22,7 @@ export const validateMentalState = (data) => {
     "grounding",
     "reframing",
     "affirmation",
+    "activation",
   ];
 
   const emotion = validEmotions.includes(data.emotion)

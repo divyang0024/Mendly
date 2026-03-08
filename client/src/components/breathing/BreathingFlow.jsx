@@ -33,6 +33,7 @@ const PATTERNS = {
 
 const PHASE_SEQ = ["Inhale", "Hold", "Exhale"];
 
+/* ── Brand-aligned stage palettes (dark, atmospheric, derived from MD3 palette) ── */
 const STAGE = {
   Inhale: {
     bg: "linear-gradient(160deg,#0E1A00 0%,#1F3700 55%,#152500 100%)",
@@ -69,8 +70,6 @@ const STAGE = {
 function ArcRing({ total, color, phaseKey }) {
   const R = 108,
     C = 2 * Math.PI * R;
-  // CSS animation drives the arc — it runs 0→full over exactly `total` seconds.
-  // Remounting via key resets it cleanly on every phase change.
   const animName = `arcFill_${phaseKey}`;
   const style = `@keyframes ${animName} { from { stroke-dashoffset: ${C.toFixed(2)}; } to { stroke-dashoffset: 0; } }`;
   return (
@@ -80,8 +79,8 @@ function ArcRing({ total, color, phaseKey }) {
       viewBox="0 0 232 232"
       style={{
         position: "absolute",
-        top: -16,
-        left: -16,
+        top: -6,
+        left: -6,
         transform: "rotate(-90deg)",
         zIndex: 1,
         pointerEvents: "none",
@@ -163,17 +162,70 @@ function Particles({ phase }) {
   );
 }
 
+const SEGMENT_COLORS = [
+  "#4C662B",
+  "#5A7530",
+  "#6B8A35",
+  "#86A33F",
+  "#A6B830",
+  "#C5A000",
+  "#D48800",
+  "#D46A00",
+  "#C2500A",
+  "#BA1A1A",
+];
+function TensionMeter({ value }) {
+  const label =
+    value <= 3
+      ? "Feeling calm"
+      : value <= 6
+        ? "Some tension"
+        : "High activation";
+  const labelColor =
+    value <= 3 ? "#354E16" : value <= 6 ? "#78350F" : "#93000A";
+  const labelBg = value <= 3 ? "#CDEDA3" : value <= 6 ? "#FEF3C7" : "#FFDAD6";
+  return (
+    <div className="bf-meter-wrap">
+      <div className="bf-meter-bar">
+        {Array.from({ length: 10 }, (_, i) => (
+          <div
+            key={i}
+            className="bf-meter-seg"
+            style={{
+              background:
+                i < value
+                  ? SEGMENT_COLORS[i]
+                  : "var(--surface-container-highest)",
+              transform: i < value ? "scaleY(1)" : "scaleY(0.55)",
+              opacity: i < value ? 1 : 0.4,
+              height: i < value ? 28 + (i / 9) * 20 : 24,
+              transition: `all 0.25s cubic-bezier(.4,0,.2,1) ${i * 0.02}s`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="bf-meter-meta">
+        <span
+          className="bf-meter-val"
+          style={{ color: SEGMENT_COLORS[Math.min(value - 1, 9)] }}
+        >
+          {value}
+          <span className="bf-meter-denom">/10</span>
+        </span>
+        <span
+          className="bf-meter-lbl"
+          style={{ background: labelBg, color: labelColor }}
+        >
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+// fill color for slider track
 const fMeta = (v) => ({
-  emoji: v <= 3 ? "🌿" : v <= 6 ? "🌤" : "🔥",
-  label:
-    v <= 3
-      ? "Body feels calm"
-      : v <= 6
-        ? "Some tension present"
-        : "High activation",
-  bg: v <= 3 ? "#CDEDA3" : v <= 6 ? "#FEF3C7" : "#FFDAD6",
-  text: v <= 3 ? "#354E16" : v <= 6 ? "#78350F" : "#93000A",
   fill: v <= 3 ? "#4C662B" : v <= 6 ? "#C5A000" : "#BA1A1A",
 });
 
@@ -189,7 +241,6 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
   const [bsId, setBsId] = useState(null);
   const [rKey, setRKey] = useState(0);
   const timer = useRef(null);
-  // Refs keep the interval callback up-to-date without stale closures
   const phaseRef = useRef("Inhale");
   const patKeyRef = useRef("4-4-6");
 
@@ -212,7 +263,6 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
     timer.current = setInterval(() => {
       setDur((d) => d + 1);
       setCount((c) => {
-        // When count would reach 0, transition phase immediately so 0 is never rendered
         if (c > 1) return c - 1;
         const curPhase = phaseRef.current;
         const curPat = PATTERNS[patKeyRef.current];
@@ -322,8 +372,27 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
         {/* ════ STEP 1 — WELCOME ════ */}
         {step === 1 && (
           <div className="bf-body bf-in">
-            <div className="bf-welcome-ic">🫁</div>
-            <div className="bf-eyebrow" style={{ margin: "0 auto 14px" }}>
+            <div className="bf-welcome-ic">
+              <svg
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  width: 30,
+                  height: 30,
+                  color: "var(--on-primary-container)",
+                }}
+              >
+                <path d="M6 12c0-3.314 2.686-6 6-6s6 2.686 6 6v2H6v-2z" />
+                <path d="M18 16h-1a5 5 0 0 1 5-5 4 4 0 0 1 4 4 3 3 0 0 1-3 3H8" />
+                <path d="M6 18c0 2.21 1.79 4 4 4h14a3 3 0 0 0 3-3 3 3 0 0 0-3-3" />
+                <path d="M8 22v3M12 22v3M16 22v3" />
+              </svg>
+            </div>
+            <div className="bf-eyebrow">
               <span className="bf-ey-dot" />
               <p>Guided Practice</p>
             </div>
@@ -334,14 +403,64 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
             </p>
             <div className="bf-feat-grid">
               {[
-                ["🎯", "3 techniques", "Choose your pattern"],
-                ["📊", "Track progress", "Before & after mood"],
-                ["⏱", "Your pace", "Stop whenever ready"],
-              ].map(([e, l, s]) => (
-                <div className="bf-feat" key={l}>
-                  <span className="bf-feat-e">{e}</span>
-                  <span className="bf-feat-l">{l}</span>
-                  <span className="bf-feat-s">{s}</span>
+                {
+                  icon: (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" />
+                    </svg>
+                  ),
+                  label: "3 techniques",
+                  sub: "Choose your pattern",
+                },
+                {
+                  icon: (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                  ),
+                  label: "Track progress",
+                  sub: "Before & after mood",
+                },
+                {
+                  icon: (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  ),
+                  label: "Your pace",
+                  sub: "Stop whenever ready",
+                },
+              ].map(({ icon, label, sub }) => (
+                <div className="bf-feat" key={label}>
+                  <span className="bf-feat-e">{icon}</span>
+                  <span className="bf-feat-l">{label}</span>
+                  <span className="bf-feat-s">{sub}</span>
                 </div>
               ))}
             </div>
@@ -371,21 +490,12 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                   <span className="bf-sn">1</span>
                   <span className="bf-step-lbl">Before we start</span>
                 </div>
-                <h2 className="bf-title">How do you feel?</h2>
+                <h2 className="bf-title">Current stress level</h2>
                 <p className="bf-sub">
-                  Rate your current stress level so we can track your
-                  improvement.
+                  Drag to set — we'll compare after your session.
                 </p>
-                <div className="bf-emoji bf-d1">{fm.emoji}</div>
-                <div
-                  className="bf-fchip bf-d1"
-                  style={{ background: fm.bg, color: fm.text }}
-                >
-                  <span className="bf-fval">{before}/10</span>
-                  <span className="bf-fdot" />
-                  {fm.label}
-                </div>
-                <div className="bf-slwrap bf-d2">
+                <div className="bf-slwrap bf-d1">
+                  <TensionMeter value={before} />
                   <input
                     type="range"
                     min="1"
@@ -399,7 +509,7 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     }}
                   />
                   <div className="bf-sllbl">
-                    <span>Very Calm</span>
+                    <span>Calm</span>
                     <span>Overwhelmed</span>
                   </div>
                 </div>
@@ -521,52 +631,42 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
         {/* ════ STEP 4 — IMMERSIVE STAGE ════ */}
         {step === 4 && (
           <div className="bf-stage" style={{ background: cfg.bg }}>
+            {/* Layered atmosphere */}
             <div className="bf-sdots" />
-            <div className="bf-sr r1" />
-            <div className="bf-sr r2" />
-            <div className="bf-sr r3" />
             <div className="bf-ga" style={{ background: cfg.glow }} />
             <div className="bf-gb" style={{ background: cfg.glow }} />
+            <div className="bf-gc" style={{ background: cfg.glow }} />
 
-            {/* Top bar */}
+            {/* ── Top status strip ── */}
             <div className="bf-stage-top">
               <div className="bf-stimer" style={{ color: cfg.accent }}>
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                   <circle
                     cx="6"
                     cy="6"
                     r="5"
                     stroke="currentColor"
-                    strokeWidth="1"
+                    strokeWidth="1.2"
                     fill="none"
-                    opacity=".6"
                   />
                   <path
                     d="M6 3v3l2 1.5"
                     stroke="currentColor"
-                    strokeWidth="1"
+                    strokeWidth="1.2"
                     strokeLinecap="round"
-                    opacity=".6"
                   />
                 </svg>
                 {fmt(dur)}
               </div>
-              <div className="bf-spills">
-                {PHASE_SEQ.map((ph) => (
-                  <div
-                    key={ph}
-                    className={`bf-spill${phase === ph ? " on" : ""}`}
-                  >
-                    {ph}
-                  </div>
-                ))}
-              </div>
-              <div className="bf-spat" style={{ color: cfg.accent }}>
-                {pat.timing}
+              <div
+                className="bf-spat"
+                style={{ color: cfg.accent, opacity: 0.6 }}
+              >
+                {pat.label} · {pat.timing}
               </div>
             </div>
 
-            {/* Orb */}
+            {/* ── Central orb ── */}
             <div className="bf-orb-wrap">
               <div
                 className="bf-orb-sc"
@@ -587,81 +687,84 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                 <div className="bf-orb" style={{ background: cfg.orb }}>
                   <div className="bf-orb-shine" />
                   <Particles phase={phase} />
-                  <span className="bf-orb-ph" style={{ color: cfg.label }}>
-                    {phase}
-                  </span>
                   <span className="bf-orb-cnt">{count}</span>
-                  <div
-                    className={`bf-orb-arr ${phase.toLowerCase()}`}
-                    style={{ color: cfg.arc }}
-                  >
-                    {phase === "Inhale" && (
-                      <svg viewBox="0 0 22 22" fill="none">
-                        <path
-                          d="M11 17V5"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M5 11l6-6 6 6"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                    {phase === "Hold" && (
-                      <svg viewBox="0 0 22 22" fill="none">
-                        <rect
-                          x="5.5"
-                          y="5"
-                          width="3.5"
-                          height="12"
-                          rx="1.5"
-                          fill="currentColor"
-                          opacity=".7"
-                        />
-                        <rect
-                          x="13"
-                          y="5"
-                          width="3.5"
-                          height="12"
-                          rx="1.5"
-                          fill="currentColor"
-                          opacity=".7"
-                        />
-                      </svg>
-                    )}
-                    {phase === "Exhale" && (
-                      <svg viewBox="0 0 22 22" fill="none">
-                        <path
-                          d="M11 5v12"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M5 11l6 6 6-6"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
 
-            <p className="bf-hint" style={{ color: cfg.accent }}>
-              {cfg.hint}
-            </p>
+            {/* ── Phase label + arrow below orb ── */}
+            <div className="bf-phase-block">
+              <div
+                className={`bf-orb-arr ${phase.toLowerCase()}`}
+                style={{ color: cfg.arc }}
+              >
+                {phase === "Inhale" && (
+                  <svg viewBox="0 0 22 22" fill="none">
+                    <path
+                      d="M11 17V5"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M5 11l6-6 6 6"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+                {phase === "Hold" && (
+                  <svg viewBox="0 0 22 22" fill="none">
+                    <rect
+                      x="5.5"
+                      y="5"
+                      width="3.5"
+                      height="12"
+                      rx="1.5"
+                      fill="currentColor"
+                      opacity=".7"
+                    />
+                    <rect
+                      x="13"
+                      y="5"
+                      width="3.5"
+                      height="12"
+                      rx="1.5"
+                      fill="currentColor"
+                      opacity=".7"
+                    />
+                  </svg>
+                )}
+                {phase === "Exhale" && (
+                  <svg viewBox="0 0 22 22" fill="none">
+                    <path
+                      d="M11 5v12"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M5 11l6 6 6-6"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
+              <span className="bf-phase-name" style={{ color: cfg.accent }}>
+                {phase}
+              </span>
+              <p className="bf-hint" style={{ color: cfg.accent }}>
+                {cfg.hint}
+              </p>
+            </div>
 
-            {/* Phase ratio bar */}
-            <div className="bf-phasebar">
+            {/* ── Phase pill tabs ── */}
+            <div className="bf-phase-tabs">
               {PHASE_SEQ.map((ph) => {
                 const tp =
                   ph === "Inhale"
@@ -669,20 +772,23 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     : ph === "Hold"
                       ? pat.hold
                       : pat.exhale;
-                const tot = pat.inhale + pat.hold + pat.exhale;
+                const active = phase === ph;
                 return (
                   <div
                     key={ph}
-                    className={`bf-pbseg${phase === ph ? " on" : ""}`}
-                    style={{ flex: tp / tot }}
+                    className={`bf-ptab${active ? " on" : ""}`}
+                    style={
+                      active
+                        ? {
+                            background: `${STAGE[ph].arc}22`,
+                            borderColor: `${STAGE[ph].arc}55`,
+                            color: STAGE[ph].arc,
+                          }
+                        : {}
+                    }
                   >
-                    <div
-                      className="bf-pbfill"
-                      style={{ background: STAGE[ph].arc }}
-                    />
-                    <span className="bf-pblbl" style={{ color: STAGE[ph].arc }}>
-                      {ph}
-                    </span>
+                    <span className="bf-ptab-name">{ph}</span>
+                    <span className="bf-ptab-sec">{tp}s</span>
                   </div>
                 );
               })}
@@ -690,9 +796,20 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
 
             <button
               className="bf-btn-stop"
-              style={{ color: cfg.accent, borderColor: `${cfg.arc}35` }}
+              style={{ color: cfg.accent, borderColor: `${cfg.arc}40` }}
               onClick={finish}
             >
+              <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
+                <rect
+                  x="3"
+                  y="3"
+                  width="10"
+                  height="10"
+                  rx="2"
+                  fill="currentColor"
+                  opacity=".8"
+                />
+              </svg>
               Finish Session
             </button>
           </div>
@@ -713,16 +830,8 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                 <p className="bf-sub">
                   Rate your stress level after the session.
                 </p>
-                <div className="bf-emoji bf-d1">{fm.emoji}</div>
-                <div
-                  className="bf-fchip bf-d1"
-                  style={{ background: fm.bg, color: fm.text }}
-                >
-                  <span className="bf-fval">{after}/10</span>
-                  <span className="bf-fdot" />
-                  {fm.label}
-                </div>
-                <div className="bf-slwrap bf-d2">
+                <div className="bf-slwrap bf-d1">
+                  <TensionMeter value={after} />
                   <input
                     type="range"
                     min="1"
@@ -736,7 +845,7 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     }}
                   />
                   <div className="bf-sllbl">
-                    <span>Very Calm</span>
+                    <span>Calm</span>
                     <span>Overwhelmed</span>
                   </div>
                 </div>
@@ -746,9 +855,38 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
                     style={{
                       background: diff > 0 ? "#CDEDA3" : "#FFDAD6",
                       color: diff > 0 ? "#354E16" : "#93000A",
+                      border: `1.5px solid ${diff > 0 ? "rgba(76,102,43,0.2)" : "rgba(186,26,26,0.2)"}`,
                     }}
                   >
-                    <span>{diff > 0 ? "🌿" : "🔥"}</span>
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      {diff > 0 ? (
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 5v14M5 12l7 7 7-7" />
+                        </svg>
+                      ) : (
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 19V5M5 12l7-7 7 7" />
+                        </svg>
+                      )}
+                    </span>
                     <span>
                       {diff > 0
                         ? `Stress reduced by ${diff} point${diff > 1 ? "s" : ""}`
@@ -819,7 +957,30 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
             </div>
             {before > after && (
               <div className="bf-insight bf-d3">
-                <span style={{ fontSize: 22 }}>🌿</span>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: "var(--primary)",
+                  }}
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22V12" />
+                    <path d="M12 12C12 7 7 4 4 6" />
+                    <path d="M12 12c0-5 5-8 8-6" />
+                    <path d="M12 12c-4 0-7 3-6 7" />
+                    <path d="M12 12c4 0 7 3 6 7" />
+                  </svg>
+                </span>
                 <div>
                   <div className="bf-ins-h">Mood improved</div>
                   <p className="bf-ins-t">
@@ -852,161 +1013,928 @@ export default function BreathingFlow({ sessionId = null, onComplete }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────
+   DESIGN SYSTEM — Material Design 3 · Light · Brand Palette
+   Fonts: Playfair Display (titles) · DM Sans (body)
+   ───────────────────────────────────────────────────────────── */
 const S = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --primary:#4C662B;--primary-container:#CDEDA3;--on-primary:#FFFFFF;--on-primary-container:#354E16;
-  --secondary:#586249;--secondary-container:#DCE7C8;--on-secondary-container:#404A33;
-  --tertiary:#386663;--tertiary-container:#BCECE7;--on-tertiary-container:#1F4E4B;
-  --error:#BA1A1A;--error-container:#FFDAD6;--on-error-container:#93000A;
-  --on-surface:#1A1C16;--on-surface-variant:#44483D;
-  --outline:#75796C;--outline-variant:#C5C8BA;
-  --surface-container-low:#F3F4E9;--surface-container:#EEEFE3;
-  --surface-container-high:#E8E9DE;--surface-container-highest:#E2E3D8;
-  --inverse-primary:#B1D18A;
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary:                  #4C662B;
+  --primary-container:        #CDEDA3;
+  --on-primary:               #FFFFFF;
+  --on-primary-container:     #354E16;
+  --secondary:                #586249;
+  --secondary-container:      #DCE7C8;
+  --on-secondary-container:   #404A33;
+  --tertiary:                 #386663;
+  --tertiary-container:       #BCECE7;
+  --on-tertiary-container:    #1F4E4B;
+  --error:                    #BA1A1A;
+  --error-container:          #FFDAD6;
+  --on-error-container:       #93000A;
+  --on-surface:               #1A1C16;
+  --on-surface-variant:       #44483D;
+  --outline:                  #75796C;
+  --outline-variant:          #C5C8BA;
+  --surface-container-low:    #F3F4E9;
+  --surface-container:        #EEEFE3;
+  --surface-container-high:   #E8E9DE;
+  --surface-container-highest:#E2E3D8;
+  --inverse-primary:          #B1D18A;
 }
-/* CARD */
-.bf-card{font-family:'DM Sans',sans-serif;background:var(--surface-container-low);border:1.5px solid var(--outline-variant);border-radius:20px;overflow:hidden;position:relative;box-shadow:0 1px 12px rgba(26,28,22,0.07);color:var(--on-surface);max-width:420px;margin:0 auto;}
-.bf-blob{position:absolute;top:-48px;right:-48px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(76,102,43,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
-/* HEADER */
-.bf-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--outline-variant);background:var(--surface-container);position:relative;z-index:1;}
-.bf-hdr-l{display:flex;align-items:center;gap:10px;}
-.bf-hdr-ic{width:30px;height:30px;border-radius:9px;background:var(--tertiary-container);color:var(--on-tertiary-container);display:grid;place-items:center;}
-.bf-hdr-ic svg{width:14px;height:14px;}
-.bf-hdr-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;color:var(--on-surface);}
-.bf-hdr-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;background:var(--surface-container-highest);border:1px solid var(--outline-variant);font-size:11px;font-weight:500;color:var(--outline);}
-/* PROGRESS */
-.bf-pbar{display:flex;gap:4px;padding:10px 18px;background:var(--surface-container);border-bottom:1px solid var(--outline-variant);position:relative;z-index:1;}
-.bf-pseg{flex:1;height:3px;border-radius:3px;background:var(--surface-container-highest);transition:background 0.5s;}
-.bf-pseg.on{background:linear-gradient(90deg,var(--primary),var(--tertiary));}
-/* BODY */
-.bf-body{padding:22px 20px 24px;position:relative;z-index:1;display:flex;flex-direction:column;}
-/* EYEBROW */
-.bf-eyebrow{display:inline-flex;align-items:center;gap:7px;background:var(--primary-container);border:1px solid rgba(76,102,43,0.2);border-radius:100px;padding:4px 12px 4px 9px;width:fit-content;}
-.bf-ey-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;animation:bfPulse 2.2s ease-in-out infinite;}
-.bf-eyebrow p{font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--on-primary-container);}
-@keyframes bfPulse{0%,100%{opacity:1}50%{opacity:0.35}}
-/* STEP EYEBROW */
-.bf-step-ey{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;}
-.bf-sn{width:20px;height:20px;border-radius:50%;background:var(--primary);color:var(--on-primary);font-size:11px;font-weight:600;display:grid;place-items:center;}
-.bf-step-lbl{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--outline);}
-/* TYPE */
-.bf-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:400;color:var(--on-surface);letter-spacing:-0.3px;margin-bottom:6px;line-height:1.2;}
-.bf-sub{font-size:13.5px;font-weight:300;color:var(--outline);line-height:1.65;margin-bottom:20px;}
-/* WELCOME ICON */
-.bf-welcome-ic{width:64px;height:64px;border-radius:18px;background:var(--primary-container);border:1.5px solid rgba(76,102,43,0.18);display:grid;place-items:center;font-size:30px;margin:0 auto 16px;}
-/* FEATURE GRID */
-.bf-feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px;}
-.bf-feat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:14px;background:var(--surface-container);border:1px solid var(--outline-variant);text-align:center;}
-.bf-feat-e{font-size:18px;line-height:1;}
-.bf-feat-l{font-size:11.5px;font-weight:600;color:var(--on-surface);}
-.bf-feat-s{font-size:10.5px;color:var(--outline);font-weight:300;}
-/* EMOJI */
-.bf-emoji{font-size:44px;line-height:1;text-align:center;margin:0 auto 10px;}
-/* FEELING CHIP */
-.bf-fchip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:500;margin:0 auto 20px;transition:all 0.3s;}
-.bf-fval{font-weight:700;}
-.bf-fdot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:0.5;}
-/* SLIDER */
-.bf-slwrap{margin-bottom:20px;}
-.bf-sl{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;outline:none;background:linear-gradient(90deg,var(--f,var(--primary)) var(--t,44%),var(--surface-container-highest) var(--t,44%));transition:background 0.3s;}
-.bf-sl::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 6px rgba(0,0,0,0.14),0 0 0 2.5px var(--f,var(--primary));cursor:pointer;transition:box-shadow 0.2s;}
-.bf-sl::-webkit-slider-thumb:hover{box-shadow:0 1px 8px rgba(0,0,0,0.2),0 0 0 3.5px var(--f,var(--primary));}
-.bf-sllbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--outline);margin-top:7px;}
-/* DIFF */
-.bf-diff{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:500;margin-bottom:18px;}
-.bf-diff-b{margin-left:auto;font-size:12px;opacity:0.7;font-variant-numeric:tabular-nums;}
-/* PATTERN CARDS */
-.bf-pats{display:flex;flex-direction:column;gap:9px;margin-bottom:22px;}
-.bf-pat{display:flex;align-items:flex-start;gap:13px;padding:14px 15px;border:1.5px solid var(--outline-variant);border-radius:14px;cursor:pointer;background:var(--surface-container-low);transition:all 0.22s;}
-.bf-pat:hover{border-color:rgba(76,102,43,0.3);background:var(--surface-container);transform:translateX(2px);}
-.bf-pat.sel{border-color:var(--primary);background:var(--primary-container);box-shadow:0 2px 12px rgba(76,102,43,0.1);}
-.bf-pat-ic{width:42px;height:42px;border-radius:11px;flex-shrink:0;background:var(--surface-container-high);color:var(--outline);display:grid;place-items:center;transition:all 0.22s;}
-.bf-pat-ic svg{width:20px;height:20px;}
-.bf-pat.sel .bf-pat-ic{background:rgba(76,102,43,0.12);color:var(--primary);}
-.bf-pat-inf{flex:1;}
-.bf-pat-name{font-size:14px;font-weight:600;color:var(--on-surface);margin-bottom:1px;transition:color 0.2s;}
-.bf-pat.sel .bf-pat-name{color:var(--on-primary-container);}
-.bf-pat-time{font-size:12px;font-weight:700;letter-spacing:0.08em;color:var(--primary);margin-bottom:3px;}
-.bf-pat.sel .bf-pat-time{color:var(--on-primary-container);opacity:0.8;}
-.bf-pat-desc{font-size:11.5px;color:var(--outline);font-weight:300;line-height:1.4;}
-.bf-pat.sel .bf-pat-desc{color:var(--on-primary-container);opacity:0.65;}
-.bf-pat-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--outline-variant);display:grid;place-items:center;flex-shrink:0;margin-top:1px;transition:all 0.22s;}
-.bf-pat.sel .bf-pat-radio{background:var(--primary);border-color:var(--primary);}
-/* BUTTONS */
-.bf-btn-p{width:100%;padding:13px 20px;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:500;background:var(--primary);color:var(--on-primary);cursor:pointer;transition:all 0.22s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(76,102,43,0.2);margin-top:4px;}
-.bf-btn-p svg{width:14px;height:14px;}
-.bf-btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(76,102,43,0.28);background:#3d5422;}
-.bf-btn-t{width:100%;padding:13px 20px;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:500;background:var(--tertiary);color:#fff;cursor:pointer;transition:all 0.22s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(56,102,99,0.2);margin-top:4px;}
-.bf-btn-t svg{width:14px;height:14px;}
-.bf-btn-t:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(56,102,99,0.28);background:#2d5452;}
-.bf-btn-o{width:100%;padding:13px 20px;border:1.5px solid var(--outline-variant);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:500;background:var(--surface-container);color:var(--on-surface);cursor:pointer;transition:all 0.22s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
-.bf-btn-o:hover{background:var(--surface-container-high);border-color:var(--outline);transform:translateY(-1px);}
-/* STAGE */
-.bf-stage{position:relative;min-height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 22px 28px;overflow:hidden;transition:background 1.4s;}
-.bf-sdots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.035) 1px,transparent 1px);background-size:22px 22px;pointer-events:none;z-index:0;}
-.bf-sr{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.055);pointer-events:none;z-index:0;}
-.bf-sr.r1{width:340px;height:340px;top:-130px;right:-110px;}
-.bf-sr.r2{width:200px;height:200px;top:-70px;right:-65px;border-color:rgba(255,255,255,0.03);}
-.bf-sr.r3{width:130px;height:130px;bottom:-55px;left:-55px;border-color:rgba(255,255,255,0.035);}
-.bf-ga{position:absolute;width:220px;height:220px;top:-70px;left:-80px;border-radius:50%;filter:blur(70px);opacity:0.5;pointer-events:none;z-index:0;transition:background 1.4s;}
-.bf-gb{position:absolute;width:160px;height:160px;bottom:-55px;right:-55px;border-radius:50%;filter:blur(60px);opacity:0.3;pointer-events:none;z-index:0;transition:background 1.4s;}
-.bf-stage-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:24px;z-index:3;}
-.bf-stimer{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;background:rgba(0,0,0,0.25);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.07);font-size:12.5px;font-weight:400;font-variant-numeric:tabular-nums;letter-spacing:0.4px;}
-.bf-spills{display:flex;gap:5px;}
-.bf-spill{padding:4px 10px;border-radius:8px;font-size:10.5px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.22);border:1px solid transparent;transition:all 0.4s;}
-.bf-spill.on{color:rgba(255,255,255,0.92);background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.12);}
-.bf-spat{font-size:12px;font-weight:500;letter-spacing:1px;opacity:0.7;}
-/* ORB */
-.bf-orb-wrap{position:relative;width:200px;height:200px;z-index:2;margin-bottom:22px;}
-.bf-orb-sc{position:absolute;inset:0;}
-.bf-orb-glow{position:absolute;inset:-40px;border-radius:50%;filter:blur(55px);z-index:0;transition:all 1.5s cubic-bezier(0.4,0,0.2,1);}
-.bf-rip{position:absolute;inset:-5px;border-radius:50%;pointer-events:none;z-index:0;}
-@keyframes ripOut{0%{transform:scale(0.95);opacity:0.45}100%{transform:scale(2.2);opacity:0}}
-@keyframes ripIn {0%{transform:scale(1.9);opacity:0.4}100%{transform:scale(0.82);opacity:0}}
-@keyframes ripHld{0%,100%{transform:scale(1.1);opacity:0.22}50%{transform:scale(1.38);opacity:0.08}}
-.bf-rip.inhale{animation:ripOut 3.5s ease-out infinite;}
-.bf-rip.inhale.r2{animation-delay:.9s;}
-.bf-rip.inhale.r3{animation-delay:1.8s;}
-.bf-rip.exhale{animation:ripIn 4.5s ease-in infinite;}
-.bf-rip.exhale.r2{animation-delay:1.2s;}
-.bf-rip.exhale.r3{animation-delay:2.4s;}
-.bf-rip.hold{animation:ripHld 2.5s ease-in-out infinite;}
-.bf-rip.hold.r2{animation-delay:.8s;}
-.bf-rip.hold.r3{animation-delay:1.6s;}
-.bf-orb{position:absolute;inset:0;border-radius:50%;overflow:hidden;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 12px 48px rgba(0,0,0,0.4),inset 0 -8px 24px rgba(0,0,0,0.15),inset 0 8px 28px rgba(255,255,255,0.08);transition:background 0.8s;}
-.bf-orb-shine{position:absolute;top:10%;left:18%;width:38%;height:28%;border-radius:50%;background:rgba(255,255,255,0.12);filter:blur(12px);pointer-events:none;}
-.bf-orb-ph{font-size:10.5px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:2px;z-index:1;}
-.bf-orb-cnt{font-size:56px;font-weight:300;color:white;line-height:1;z-index:1;font-variant-numeric:tabular-nums;text-shadow:0 2px 16px rgba(0,0,0,0.4);}
-.bf-orb-arr{width:24px;height:24px;margin-top:5px;z-index:1;}
-.bf-orb-arr svg{width:24px;height:24px;}
-@keyframes floatUp{0%,100%{transform:translateY(0);opacity:0.7}50%{transform:translateY(-5px);opacity:1}}
-@keyframes floatDn{0%,100%{transform:translateY(0);opacity:0.7}50%{transform:translateY(5px);opacity:1}}
-@keyframes pulseHld{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.18);opacity:0.9}}
-.bf-orb-arr.inhale{animation:floatUp 1.4s ease-in-out infinite;}
-.bf-orb-arr.exhale{animation:floatDn 1.4s ease-in-out infinite;}
-.bf-orb-arr.hold  {animation:pulseHld 2s ease-in-out infinite;}
-.bf-hint{font-size:13.5px;font-style:italic;font-weight:300;text-align:center;letter-spacing:0.1px;z-index:3;min-height:20px;margin-bottom:16px;transition:color 0.6s;}
-.bf-phasebar{display:flex;width:100%;max-width:260px;height:4px;border-radius:4px;overflow:hidden;gap:3px;margin-bottom:20px;z-index:3;}
-.bf-pbseg{position:relative;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;}
-.bf-pbfill{position:absolute;inset:0;opacity:0.2;transition:opacity 0.4s;}
-.bf-pbseg.on .bf-pbfill{opacity:1;}
-.bf-pblbl{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap;opacity:0;transition:opacity 0.4s;}
-.bf-pbseg.on .bf-pblbl{opacity:0.7;}
-.bf-btn-stop{padding:10px 28px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;background:rgba(255,255,255,0.07);backdrop-filter:blur(8px);border:1.5px solid;cursor:pointer;z-index:3;transition:all 0.22s;}
-.bf-btn-stop:hover{background:rgba(255,255,255,0.14);}
-/* COMPLETE */
-.bf-done{width:64px;height:64px;border-radius:50%;background:var(--primary);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 4px 18px rgba(76,102,43,0.28);}
-.bf-done svg{width:26px;height:26px;}
-.bf-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px;}
-.bf-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:100px;background:var(--surface-container-high);border:1px solid var(--outline-variant);color:var(--on-surface-variant);font-size:12.5px;font-weight:500;}
-.bf-chip.pos{background:var(--primary-container);color:var(--on-primary-container);border-color:rgba(76,102,43,0.2);}
-.bf-insight{display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border-radius:14px;background:var(--primary-container);border:1.5px solid rgba(76,102,43,0.2);margin-bottom:18px;text-align:left;}
-.bf-ins-h{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--on-primary-container);opacity:0.7;margin-bottom:3px;}
-.bf-ins-t{font-size:13px;color:var(--on-primary-container);font-weight:400;line-height:1.55;margin:0;}
-/* ANIMATIONS */
-@keyframes bfIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
-.bf-in{animation:bfIn 0.4s ease-out both;}
-.bf-d1{animation-delay:0.06s}.bf-d2{animation-delay:0.12s}.bf-d3{animation-delay:0.18s}.bf-d4{animation-delay:0.24s}
+
+/* ── CARD SHELL ── */
+.bf-card {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface-container-low);
+  border: 1.5px solid var(--outline-variant);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 12px rgba(26,28,22,0.07);
+  color: var(--on-surface);
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Decorative orb — top-right, same as sibling cards */
+.bf-blob {
+  position: absolute;
+  top: -48px;
+  right: -48px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56,102,99,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.bf-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--outline-variant);
+  background: var(--surface-container);
+  position: relative;
+  z-index: 1;
+}
+.bf-hdr-l {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bf-hdr-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--tertiary-container);
+  color: var(--on-tertiary-container);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.bf-hdr-ic svg { width: 14px; height: 14px; }
+.bf-hdr-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--on-surface);
+  letter-spacing: -0.1px;
+}
+.bf-hdr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--surface-container-highest);
+  border: 1px solid var(--outline-variant);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--outline);
+  white-space: nowrap;
+}
+
+/* ── PROGRESS BAR ── */
+.bf-pbar {
+  display: flex;
+  gap: 4px;
+  padding: 10px 18px;
+  background: var(--surface-container);
+  border-bottom: 1px solid var(--outline-variant);
+  position: relative;
+  z-index: 1;
+}
+.bf-pseg {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--surface-container-highest);
+  transition: background 0.5s ease;
+}
+.bf-pseg.on {
+  background: linear-gradient(90deg, var(--primary), var(--tertiary));
+}
+
+/* ── BODY ── */
+.bf-body {
+  padding: 22px 20px 26px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── EYEBROW (welcome) ── */
+.bf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--primary-container);
+  border: 1px solid rgba(76,102,43,0.22);
+  border-radius: 100px;
+  padding: 4px 12px 4px 9px;
+  width: fit-content;
+  margin-bottom: 14px;
+}
+.bf-ey-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: bfPulse 2.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.bf-eyebrow p {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--on-primary-container);
+}
+@keyframes bfPulse { 0%,100% { opacity:1 } 50% { opacity:0.35 } }
+
+/* ── STEP EYEBROW ── */
+.bf-step-ey {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.bf-sn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 11px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.bf-step-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--outline);
+}
+
+/* ── TYPOGRAPHY ── */
+.bf-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--on-surface);
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.bf-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--outline);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+/* ── WELCOME ICON ── */
+.bf-welcome-ic {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: var(--primary-container);
+  border: 1.5px solid rgba(76,102,43,0.18);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  margin: 0 auto 18px;
+}
+
+/* ── FEATURE GRID ── */
+.bf-feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.bf-feat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 13px 8px;
+  border-radius: 14px;
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.bf-feat:hover {
+  background: var(--surface-container-high);
+  border-color: rgba(76,102,43,0.25);
+}
+.bf-feat-e { font-size: 18px; line-height: 1; display:flex; align-items:center; color:var(--on-secondary-container); } .bf-feat-e svg { width:20px; height:20px; }
+.bf-feat-l { font-size: 11.5px; font-weight: 600; color: var(--on-surface); }
+.bf-feat-s { font-size: 10.5px; color: var(--outline); font-weight: 300; }
+
+
+
+/* ── TENSION METER ── */
+.bf-meter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  margin-bottom: 14px;
+}
+.bf-meter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 56px;
+}
+.bf-meter-seg {
+  flex: 1;
+  border-radius: 4px;
+  transform-origin: bottom;
+}
+.bf-meter-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bf-meter-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+.bf-meter-denom {
+  font-size: 0.95rem;
+  opacity: 0.5;
+  margin-left: 1px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+.bf-meter-lbl {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+}
+
+/* ── SLIDER ── */
+.bf-slwrap { margin-bottom: 20px; }
+.bf-sl {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    90deg,
+    var(--f, var(--primary)) var(--t, 44%),
+    var(--surface-container-highest) var(--t, 44%)
+  );
+  transition: background 0.3s;
+}
+.bf-sl::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.14), 0 0 0 2.5px var(--f, var(--primary));
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.bf-sl::-webkit-slider-thumb:hover {
+  box-shadow: 0 1px 8px rgba(0,0,0,0.2), 0 0 0 3.5px var(--f, var(--primary));
+  transform: scale(1.1);
+}
+.bf-sllbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--outline);
+  margin-top: 7px;
+  font-weight: 300;
+}
+
+/* ── DIFF BADGE (step 5) ── */
+.bf-diff {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+.bf-diff-b {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── PATTERN CARDS ── */
+.bf-pats {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 22px;
+}
+.bf-pat {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px 15px;
+  border: 1.5px solid var(--outline-variant);
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--surface-container-low);
+  transition: all 0.22s ease;
+}
+.bf-pat:hover {
+  border-color: rgba(76,102,43,0.32);
+  background: var(--surface-container);
+  transform: translateX(2px);
+  box-shadow: 0 2px 10px rgba(26,28,22,0.05);
+}
+.bf-pat.sel {
+  border-color: var(--primary);
+  background: var(--primary-container);
+  box-shadow: 0 2px 14px rgba(76,102,43,0.12);
+  transform: translateX(2px);
+}
+.bf-pat-ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  background: var(--surface-container-high);
+  color: var(--outline);
+  display: grid;
+  place-items: center;
+  transition: all 0.22s;
+}
+.bf-pat-ic svg { width: 20px; height: 20px; }
+.bf-pat.sel .bf-pat-ic {
+  background: rgba(76,102,43,0.13);
+  color: var(--primary);
+}
+.bf-pat-inf { flex: 1; min-width: 0; }
+.bf-pat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin-bottom: 1px;
+  transition: color 0.2s;
+}
+.bf-pat.sel .bf-pat-name { color: var(--on-primary-container); }
+.bf-pat-time {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 3px;
+}
+.bf-pat.sel .bf-pat-time { color: var(--on-primary-container); opacity: 0.75; }
+.bf-pat-desc {
+  font-size: 11.5px;
+  color: var(--outline);
+  font-weight: 300;
+  line-height: 1.45;
+}
+.bf-pat.sel .bf-pat-desc { color: var(--on-primary-container); opacity: 0.6; }
+.bf-pat-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--outline-variant);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.22s;
+}
+.bf-pat.sel .bf-pat-radio {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ── BUTTONS ── */
+.bf-btn-p {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(76,102,43,0.22);
+  margin-top: 4px;
+}
+.bf-btn-p svg { width: 14px; height: 14px; }
+.bf-btn-p:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(76,102,43,0.3);
+  background: #3d5422;
+}
+.bf-btn-p:active { transform: translateY(0); }
+
+.bf-btn-t {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  background: var(--tertiary);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(56,102,99,0.22);
+  margin-top: 4px;
+}
+.bf-btn-t svg { width: 14px; height: 14px; }
+.bf-btn-t:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(56,102,99,0.3);
+  background: #2d5452;
+}
+.bf-btn-t:active { transform: translateY(0); }
+
+.bf-btn-o {
+  width: 100%;
+  padding: 13px 20px;
+  border: 1.5px solid var(--outline-variant);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  background: var(--surface-container);
+  color: var(--on-surface);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.bf-btn-o:hover {
+  background: var(--surface-container-high);
+  border-color: var(--outline);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(26,28,22,0.06);
+}
+
+/* ════════════════════════════════════════════
+   IMMERSIVE STAGE (step 4) — redesigned
+   ════════════════════════════════════════════ */
+.bf-stage {
+  position: relative;
+  min-height: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 24px;
+  overflow: hidden;
+  transition: background 1.6s ease;
+}
+
+/* Fine dot texture */
+.bf-sdots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Three ambient glow orbs */
+.bf-ga {
+  position: absolute;
+  width: 280px; height: 280px;
+  top: -120px; left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.6s ease;
+}
+.bf-gb {
+  position: absolute;
+  width: 180px; height: 180px;
+  bottom: -60px; left: -40px;
+  border-radius: 50%;
+  filter: blur(65px);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.6s ease;
+}
+.bf-gc {
+  position: absolute;
+  width: 140px; height: 140px;
+  bottom: -40px; right: -30px;
+  border-radius: 50%;
+  filter: blur(55px);
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.6s ease;
+}
+
+/* ── Top status strip ── */
+.bf-stage-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  z-index: 3;
+  margin-bottom: 20px;
+}
+.bf-stimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.09);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.6px;
+}
+.bf-spat {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── Orb ── */
+.bf-orb-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.bf-orb-sc { position: absolute; inset: 0; }
+.bf-orb-glow {
+  position: absolute;
+  inset: -50px;
+  border-radius: 50%;
+  filter: blur(65px);
+  z-index: 0;
+  transition: all 1.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Ripple rings */
+.bf-rip {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes ripOut { 0%  { transform:scale(0.95); opacity:0.45 } 100% { transform:scale(2.2); opacity:0 } }
+@keyframes ripIn  { 0%  { transform:scale(1.9);  opacity:0.4  } 100% { transform:scale(0.82); opacity:0 } }
+@keyframes ripHld { 0%,100% { transform:scale(1.05); opacity:0.2 } 50% { transform:scale(1.32); opacity:0.07 } }
+.bf-rip.inhale          { animation: ripOut 3.5s ease-out infinite; }
+.bf-rip.inhale.r2       { animation-delay: .9s; }
+.bf-rip.inhale.r3       { animation-delay: 1.8s; }
+.bf-rip.exhale          { animation: ripIn  4.5s ease-in infinite; }
+.bf-rip.exhale.r2       { animation-delay: 1.2s; }
+.bf-rip.exhale.r3       { animation-delay: 2.4s; }
+.bf-rip.hold            { animation: ripHld 2.8s ease-in-out infinite; }
+.bf-rip.hold.r2         { animation-delay: .9s; }
+.bf-rip.hold.r3         { animation-delay: 1.8s; }
+
+/* Orb sphere */
+.bf-orb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 16px 56px rgba(0,0,0,0.5),
+    inset 0 -10px 28px rgba(0,0,0,0.18),
+    inset 0 10px 32px rgba(255,255,255,0.09);
+  transition: background 0.9s ease;
+}
+.bf-orb-shine {
+  position: absolute;
+  top: 9%; left: 16%;
+  width: 40%; height: 30%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.13);
+  filter: blur(14px);
+  pointer-events: none;
+}
+.bf-orb-cnt {
+  font-size: 72px;
+  font-weight: 200;
+  color: rgba(255,255,255,0.95);
+  line-height: 1;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  letter-spacing: -3px;
+}
+
+/* ── Phase label + arrow block ── */
+.bf-phase-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 3;
+}
+.bf-orb-arr {
+  width: 22px;
+  height: 22px;
+}
+.bf-orb-arr svg { width: 22px; height: 22px; }
+@keyframes floatUp  { 0%,100% { transform:translateY(0); opacity:0.65 } 50% { transform:translateY(-6px); opacity:1 } }
+@keyframes floatDn  { 0%,100% { transform:translateY(0); opacity:0.65 } 50% { transform:translateY( 6px); opacity:1 } }
+@keyframes pulseHld { 0%,100% { transform:scale(1);      opacity:0.45 } 50% { transform:scale(1.2);      opacity:0.9 } }
+.bf-orb-arr.inhale { animation: floatUp  1.5s ease-in-out infinite; }
+.bf-orb-arr.exhale { animation: floatDn  1.5s ease-in-out infinite; }
+.bf-orb-arr.hold   { animation: pulseHld 2.2s ease-in-out infinite; }
+
+.bf-phase-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  transition: color 0.6s ease;
+}
+.bf-hint {
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 300;
+  text-align: center;
+  letter-spacing: 0.2px;
+  z-index: 3;
+  margin: 0;
+  opacity: 0.7;
+  transition: color 0.6s ease;
+  max-width: 240px;
+}
+
+/* ── Phase pill tabs ── */
+.bf-phase-tabs {
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+  width: 100%;
+  justify-content: center;
+  margin: 0;
+}
+.bf-ptab {
+  flex: 1;
+  max-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.2);
+  transition: all 0.4s ease;
+}
+.bf-ptab.on {
+  border-width: 1.5px;
+}
+.bf-ptab-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  transition: color 0.4s ease;
+}
+.bf-ptab.on .bf-ptab-name {
+  color: inherit;
+}
+.bf-ptab-sec {
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.22);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.4s ease;
+}
+.bf-ptab.on .bf-ptab-sec {
+  color: inherit;
+  font-weight: 400;
+}
+
+/* Finish button */
+.bf-btn-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 26px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid;
+  cursor: pointer;
+  z-index: 3;
+  transition: all 0.22s ease;
+  letter-spacing: 0.3px;
+}
+.bf-btn-stop:hover {
+  background: rgba(0,0,0,0.42);
+  transform: translateY(-1px);
+}
+
+/* ── COMPLETE STEP ── */
+.bf-done {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 18px rgba(76,102,43,0.3);
+}
+.bf-done svg { width: 26px; height: 26px; }
+
+.bf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.bf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 100px;
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.bf-chip.pos {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-color: rgba(76,102,43,0.22);
+}
+
+.bf-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--primary-container);
+  border: 1.5px solid rgba(76,102,43,0.2);
+  margin-bottom: 18px;
+  text-align: left;
+}
+.bf-ins-h {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--on-primary-container);
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+.bf-ins-t {
+  font-size: 13px;
+  color: var(--on-primary-container);
+  font-weight: 400;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── ENTER ANIMATIONS ── */
+@keyframes bfIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.bf-in  { animation: bfIn 0.38s ease-out both; }
+.bf-d1  { animation-delay: 0.06s; }
+.bf-d2  { animation-delay: 0.12s; }
+.bf-d3  { animation-delay: 0.18s; }
+.bf-d4  { animation-delay: 0.24s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .bf-card { border-radius: 16px; max-width: 100%; }
+  .bf-body { padding: 18px 16px 22px; }
+  .bf-title { font-size: 1.35rem; }
+  .bf-feat-grid { gap: 6px; }
+  .bf-feat { padding: 10px 5px; }
+  .bf-feat-e { font-size: 16px; }
+  .bf-feat-l { font-size: 10.5px; }
+  .bf-feat-s { font-size: 9.5px; }
+  .bf-pats { gap: 7px; }
+  .bf-pat { padding: 12px 13px; gap: 11px; }
+  .bf-pat-ic { width: 38px; height: 38px; }
+  .bf-orb-wrap { width: 190px; height: 190px; }
+  .bf-orb-cnt { font-size: 60px; }
+  .bf-phase-name { font-size: 1.2rem; }
+  .bf-stage { min-height: 490px; padding: 16px 16px 20px; }
+  .bf-stage-top { margin-bottom: 0; }
+  .bf-stimer { font-size: 11px; padding: 4px 10px; }
+  .bf-hint { font-size: 11.5px; }
+  .bf-ptab { padding: 7px 8px; }
+  .bf-ptab-sec { font-size: 14px; }
+  .bf-ptab-name { font-size: 9px; }
+  .bf-hdr { padding: 12px 14px; }
+  .bf-hdr-title { font-size: 0.95rem; }
+  .bf-pbar { padding: 8px 14px; }
+}
+
+@media (max-width: 360px) {
+  .bf-feat-grid { grid-template-columns: 1fr; gap: 5px; }
+  .bf-feat { flex-direction: row; justify-content: flex-start; padding: 10px 12px; }
+  .bf-feat-e { font-size: 18px; }
+}
 `;
