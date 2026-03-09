@@ -4,7 +4,18 @@ const BACKEND_URL = "https://mendly-ai.vercel.app" || "http://localhost:5000";
 
 const socket = io(BACKEND_URL, {
   withCredentials: true,
-  auth: { token: localStorage.getItem("token") },
+  auth: (cb) => {
+    cb({ token: localStorage.getItem("token") });
+  },
 });
 
+socket.on("connect", () => console.log("✅ Socket connected:", socket.id));
+socket.on("connect_error", (err) => console.error("❌ Socket error:", err.message));
+socket.on("disconnect", (reason) => console.log("🔌 Socket disconnected:", reason));
+
 export default socket;
+```
+
+Then in your Vercel environment variables add:
+```
+VITE_BACKEND_URL=https://your-actual-backend-url.com
