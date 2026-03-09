@@ -291,7 +291,7 @@ body {
   gap: 8px;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Icon buttons */
