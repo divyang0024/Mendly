@@ -210,12 +210,26 @@ const chatStyles = `
   --inverse-primary: #B1D18A;
 }
 
-html, body, #root { height: 100%; overflow: hidden; }
+/* ── VIEWPORT FIX for real mobile browsers ── */
+html {
+  height: -webkit-fill-available;
+}
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow: hidden;
+}
+#root {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
 
 /* ── ROOT LAYOUT ── */
 .chat-root {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   background: var(--background);
   font-family: 'DM Sans', sans-serif;
   color: var(--on-background);
@@ -228,6 +242,7 @@ html, body, #root { height: 100%; overflow: hidden; }
   width: 260px;
   flex-shrink: 0;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -236,7 +251,6 @@ html, body, #root { height: 100%; overflow: hidden; }
   transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
   z-index: 100;
 }
-/* Make SessionList fill the sidebar */
 .chat-sidebar > * {
   flex: 1;
   min-height: 0;
@@ -263,6 +277,7 @@ html, body, #root { height: 100%; overflow: hidden; }
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   min-width: 0;
   overflow: hidden;
 }
@@ -274,11 +289,14 @@ html, body, #root { height: 100%; overflow: hidden; }
   justify-content: space-between;
   padding: 0 16px;
   height: 56px;
+  min-height: 56px;
   border-bottom: 1px solid var(--outline-variant);
   background: rgba(249,250,239,0.92);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
   gap: 8px;
+  /* ✅ Fix: keep topbar above safe area on notched phones */
+  padding-top: env(safe-area-inset-top);
 }
 .chat-topbar-left {
   display: flex;
@@ -287,7 +305,7 @@ html, body, #root { height: 100%; overflow: hidden; }
   min-width: 0;
 }
 
-/* Icon buttons (back + menu) */
+/* Icon buttons */
 .chat-icon-btn {
   width: 34px; height: 34px;
   border-radius: 10px;
@@ -306,7 +324,6 @@ html, body, #root { height: 100%; overflow: hidden; }
   color: var(--primary);
 }
 
-/* Menu toggle — hidden on desktop, visible on mobile */
 .chat-menu-btn { display: none; }
 .chat-menu-count {
   position: absolute; top: -5px; right: -5px;
@@ -351,6 +368,8 @@ html, body, #root { height: 100%; overflow: hidden; }
   overflow-y: auto;
   padding: 20px 20px 8px;
   scroll-behavior: smooth;
+  /* ✅ Fix: allow scrolling past bottom nav on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 .chat-messages::-webkit-scrollbar { width: 5px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -403,19 +422,17 @@ html, body, #root { height: 100%; overflow: hidden; }
 }
 
 /* ── RESPONSIVE ── */
-
-/* Tablet — sidebar narrows */
 @media (max-width: 768px) {
   .chat-sidebar { width: 220px; }
 }
 
-/* Mobile — sidebar becomes off-canvas drawer */
 @media (max-width: 600px) {
   .chat-sidebar {
     position: fixed;
     top: 0; left: 0;
     width: min(80vw, 300px);
     height: 100vh;
+    height: 100dvh;
     transform: translateX(-105%);
     box-shadow: 4px 0 24px rgba(26,28,22,0.14);
   }
@@ -425,8 +442,13 @@ html, body, #root { height: 100%; overflow: hidden; }
   .chat-backdrop { display: block; }
   .chat-menu-btn { display: grid; }
   .chat-messages { padding: 14px 12px 6px; }
-  .chat-topbar { padding: 0 12px; height: 52px; }
-  /* Hide badge text on very small screens, keep dot */
+  .chat-topbar {
+    padding: 0 12px;
+    height: auto;
+    min-height: 52px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: 12px;
+  }
   .chat-session-badge-text { max-width: 110px; }
 }
 
