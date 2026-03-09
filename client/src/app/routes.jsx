@@ -9,6 +9,7 @@ import Grounding from "../pages/Grounding";
 import ReframingPage from "../pages/ReframingPage";
 import AffirmationPage from "../pages/AffirmationPage";
 import ProtectedRoute from "../middleware/ProtectedRoute";
+import PublicRoute from "../middleware/PublicRoute";
 import ActivationPage from "../pages/ActivationPage";
 import ProgressPage from "../pages/ProgressPage";
 import RiskDashboard from "../pages/RiskDashboard";
@@ -20,8 +21,22 @@ export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
 
         <Route
           path="/"

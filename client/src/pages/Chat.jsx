@@ -306,6 +306,7 @@ body {
   flex-shrink: 0;
   transition: all 0.18s ease;
   position: relative;
+  overflow: visible;
 }
 .chat-icon-btn:hover {
   background: var(--surface-container-high);
@@ -315,7 +316,7 @@ body {
 
 .chat-menu-btn { display: none; }
 .chat-menu-count {
-  position: absolute; top: -5px; right: -5px;
+  position: absolute; top: -7px; right: -7px;
   width: 16px; height: 16px; border-radius: 50%;
   background: var(--primary); color: #fff;
   font-size: 9px; font-weight: 600;
