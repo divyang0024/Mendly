@@ -9,8 +9,15 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [strength, setStrength] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const calcStrength = (val) => {
     let s = 0;
@@ -21,13 +28,45 @@ export default function Register() {
     setStrength(s);
   };
 
+  const validate = () => {
+    const errs = {};
+
+    if (!form.name.trim()) {
+      errs.name = "Full name is required.";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      errs.email = "Email address is required.";
+    } else if (!emailRegex.test(form.email)) {
+      errs.email = "Please enter a valid email address.";
+    }
+
+    if (!form.password) {
+      errs.password = "Password is required.";
+    } else if (form.password.length < 8) {
+      errs.password = "Password must be at least 8 characters.";
+    } else if (strength < 2) {
+      errs.password = "Password is too weak. Add uppercase letters or numbers.";
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const submit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     try {
       const { data } = await registerUser(form);
       login(data.token, data.user);
       navigate("/");
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        "Registration failed. Please try again.";
+      showToast(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -37,6 +76,27 @@ export default function Register() {
   const strengthColor = ["", "#BA1A1A", "#75796C", "#386663", "#4C662B"][
     strength
   ];
+
+  const ErrorMsg = ({ msg }) =>
+    !msg ? null : (
+      <div className="field-error">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        {msg}
+      </div>
+    );
 
   return (
     <>
@@ -51,24 +111,17 @@ export default function Register() {
           --on-primary: #FFFFFF;
           --on-primary-container: #354E16;
           --secondary: #586249;
-          --secondary-container: #DCE7C8;
-          --on-secondary-container: #404A33;
           --tertiary: #386663;
-          --tertiary-container: #BCECE7;
-          --on-tertiary-container: #1F4E4B;
           --error: #BA1A1A;
           --background: #F9FAEF;
           --on-background: #1A1C16;
-          --surface: #F9FAEF;
           --on-surface: #1A1C16;
-          --surface-variant: #E1E4D5;
           --on-surface-variant: #44483D;
           --outline: #75796C;
           --outline-variant: #C5C8BA;
           --surface-container-low: #F3F4E9;
           --surface-container: #EEEFE3;
           --surface-container-high: #E8E9DE;
-          --surface-container-highest: #E2E3D8;
           --inverse-primary: #B1D18A;
           --inverse-surface: #2F312A;
         }
@@ -84,17 +137,13 @@ export default function Register() {
 
         /* ── Left form panel ── */
         .reg-form-wrap {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: clamp(2rem, 5vw, 4rem);
-          position: relative;
+          display: flex; flex-direction: column;
+          justify-content: center; align-items: center;
+          padding: clamp(2rem, 5vw, 4rem); position: relative;
         }
 
         .form-container {
-          width: 100%;
-          max-width: 420px;
+          width: 100%; max-width: 420px;
           animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
@@ -103,497 +152,118 @@ export default function Register() {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* Logo mark */
-        .logo-mark {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 2.5rem;
-        }
-
-        .logo-icon {
-          width: 38px; height: 38px;
-          background: var(--primary);
-          border-radius: 10px;
-          display: grid;
-          place-items: center;
-        }
-
+        .logo-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 2.5rem; }
+        .logo-icon { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: grid; place-items: center; }
         .logo-icon svg { width: 20px; height: 20px; fill: var(--on-primary); }
+        .logo-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; color: var(--primary); letter-spacing: -0.01em; }
 
-        .logo-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: var(--primary);
-          letter-spacing: -0.01em;
-        }
-
-        .form-heading {
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(1.6rem, 2.5vw, 2rem);
-          font-weight: 400;
-          color: var(--on-background);
-          line-height: 1.25;
-          margin-bottom: 0.5rem;
-        }
-
-        .form-sub {
-          font-size: 14px;
-          color: var(--outline);
-          margin-bottom: 2rem;
-        }
-
-        .form-sub a {
-          color: var(--primary);
-          font-weight: 500;
-          text-decoration: none;
-        }
-
+        .form-heading { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 2.5vw, 2rem); font-weight: 400; color: var(--on-background); line-height: 1.25; margin-bottom: 0.5rem; }
+        .form-sub { font-size: 14px; color: var(--outline); margin-bottom: 2rem; }
+        .form-sub a { color: var(--primary); font-weight: 500; text-decoration: none; }
         .form-sub a:hover { text-decoration: underline; }
 
-        /* Step indicators */
-        .steps {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-bottom: 1.75rem;
-        }
-
-        .step-dot {
-          height: 4px;
-          border-radius: 100px;
-          transition: width 0.35s ease, background 0.35s ease;
-        }
-
+        .steps { display: flex; align-items: center; gap: 6px; margin-bottom: 1.75rem; }
+        .step-dot { height: 4px; border-radius: 100px; transition: width 0.35s ease, background 0.35s ease; }
         .step-dot.active  { width: 28px; background: var(--primary); }
         .step-dot.done    { width: 16px; background: var(--primary-container); }
         .step-dot.pending { width: 8px;  background: var(--outline-variant); }
 
         /* Field */
-        .field {
-          position: relative;
-          margin-bottom: 1.1rem;
-        }
+        .field { position: relative; margin-bottom: 1.1rem; }
+        .field-label { display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--on-surface-variant); margin-bottom: 0.45rem; transition: color 0.2s; }
+        .field.focused   .field-label { color: var(--primary); }
+        .field.has-error .field-label { color: var(--error); }
 
-        .field-label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: var(--on-surface-variant);
-          margin-bottom: 0.45rem;
-          transition: color 0.2s;
-        }
-
-        .field.focused .field-label { color: var(--primary); }
-
-        .field-inner {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-
-        .field-icon {
-          position: absolute;
-          left: 14px;
-          display: flex;
-          color: var(--outline);
-          pointer-events: none;
-          transition: color 0.2s;
-        }
-
-        .field.focused .field-icon { color: var(--primary); }
+        .field-inner { position: relative; display: flex; align-items: center; }
+        .field-icon { position: absolute; left: 14px; display: flex; color: var(--outline); pointer-events: none; transition: color 0.2s; }
+        .field.focused   .field-icon { color: var(--primary); }
+        .field.has-error .field-icon { color: var(--error); }
 
         .field-input {
-          width: 100%;
-          padding: 13px 14px 13px 42px;
+          width: 100%; padding: 13px 14px 13px 42px;
           background: var(--surface-container-low);
           border: 1.5px solid var(--outline-variant);
-          border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
-          color: var(--on-surface);
-          outline: none;
+          border-radius: 12px; font-family: 'DM Sans', sans-serif;
+          font-size: 15px; color: var(--on-surface); outline: none;
           transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
           -webkit-appearance: none;
         }
-
         .field-input::placeholder { color: var(--outline); font-size: 14px; }
+        .field-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(76,102,43,0.1); }
+        .field.has-error .field-input { border-color: var(--error); background: #fff8f8; box-shadow: 0 0 0 3px rgba(186,26,26,0.08); }
+        .field.has-error .field-input:focus { border-color: var(--error); box-shadow: 0 0 0 3px rgba(186,26,26,0.12); }
 
-        .field-input:focus {
-          border-color: var(--primary);
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(76,102,43,0.1);
+        .field-error {
+          display: flex; align-items: center; gap: 5px;
+          margin-top: 6px; font-size: 12px; color: var(--error);
+          animation: errIn 0.2s ease-out both;
         }
+        @keyframes errIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-        .field-toggle {
-          position: absolute;
-          right: 14px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--outline);
-          display: flex;
-          padding: 4px;
-          border-radius: 6px;
-          transition: color 0.2s, background 0.2s;
-        }
+        .field-toggle { position: absolute; right: 14px; background: none; border: none; cursor: pointer; color: var(--outline); display: flex; padding: 4px; border-radius: 6px; transition: color 0.2s, background 0.2s; }
         .field-toggle:hover { color: var(--primary); background: var(--primary-container); }
 
-        /* Password strength */
-        .strength-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 8px;
-        }
+        .strength-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .strength-bars { display: flex; gap: 4px; flex: 1; }
+        .strength-bar { flex: 1; height: 3px; border-radius: 100px; background: var(--outline-variant); transition: background 0.3s; }
+        .strength-label { font-size: 11px; font-weight: 500; min-width: 36px; text-align: right; letter-spacing: 0.03em; transition: color 0.3s; }
 
-        .strength-bars {
-          display: flex;
-          gap: 4px;
-          flex: 1;
-        }
-
-        .strength-bar {
-          flex: 1;
-          height: 3px;
-          border-radius: 100px;
-          background: var(--outline-variant);
-          transition: background 0.3s;
-        }
-
-        .strength-label {
-          font-size: 11px;
-          font-weight: 500;
-          min-width: 36px;
-          text-align: right;
-          letter-spacing: 0.03em;
-          transition: color 0.3s;
-        }
-
-        /* Terms checkbox */
-        .terms-row {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          margin: 1.25rem 0 1.5rem;
-        }
-
-        .terms-checkbox {
-          appearance: none;
-          -webkit-appearance: none;
-          width: 18px;
-          height: 18px;
-          border: 1.5px solid var(--outline-variant);
-          border-radius: 5px;
-          background: var(--surface-container-low);
-          cursor: pointer;
-          flex-shrink: 0;
-          margin-top: 1px;
-          transition: border-color 0.2s, background 0.2s;
-          position: relative;
-        }
-
-        .terms-checkbox:checked {
-          background: var(--primary);
-          border-color: var(--primary);
-        }
-
-        .terms-checkbox:checked::after {
-          content: '';
-          position: absolute;
-          left: 4px;
-          top: 1.5px;
-          width: 6px;
-          height: 10px;
-          border: 2px solid #fff;
-          border-top: none;
-          border-left: none;
-          transform: rotate(45deg);
-        }
-
-        .terms-text {
-          font-size: 13px;
-          color: var(--on-surface-variant);
-          line-height: 1.6;
-        }
-
-        .terms-text a {
-          color: var(--primary);
-          font-weight: 500;
-          text-decoration: none;
-        }
-        .terms-text a:hover { text-decoration: underline; }
-
-        /* Submit button */
         .btn-submit {
-          width: 100%;
-          padding: 14px;
-          background: var(--primary);
-          color: var(--on-primary);
-          border: none;
-          border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
-          font-weight: 500;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+          width: 100%; padding: 14px; background: var(--primary); color: var(--on-primary);
+          border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif;
+          font-size: 15px; font-weight: 500; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
           transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+          margin-top: 1.25rem;
         }
-
-        .btn-submit:hover:not(:disabled) {
-          background: var(--on-primary-container);
-          box-shadow: 0 4px 20px rgba(76,102,43,0.3);
-          transform: translateY(-1px);
-        }
+        .btn-submit:hover:not(:disabled) { background: var(--on-primary-container); box-shadow: 0 4px 20px rgba(76,102,43,0.3); transform: translateY(-1px); }
         .btn-submit:active:not(:disabled) { transform: translateY(0); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* Spinner */
-        .spinner {
-          width: 18px; height: 18px;
-          border: 2px solid rgba(255,255,255,0.4);
-          border-top-color: #fff;
-          border-radius: 50%;
-          animation: spin 0.7s linear infinite;
-        }
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Divider */
-        .divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 1.5rem 0;
-          color: var(--outline-variant);
-          font-size: 12px;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-        }
-        .divider::before, .divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: var(--outline-variant);
-        }
-
-        /* SSO buttons */
-        .sso-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-        .btn-sso {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 11px;
-          background: var(--surface-container);
-          border: 1.5px solid var(--outline-variant);
-          border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--on-surface);
-          cursor: pointer;
-          transition: background 0.2s, border-color 0.2s, transform 0.15s;
-        }
-
-        .btn-sso:hover {
-          background: var(--surface-container-high);
-          border-color: var(--outline);
-          transform: translateY(-1px);
-        }
-
-        .btn-sso svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-        /* Bottom note */
-        .signin-note {
-          text-align: center;
-          margin-top: 1.75rem;
-          font-size: 13px;
-          color: var(--outline);
-        }
-        .signin-note a {
-          color: var(--primary);
-          font-weight: 500;
-          text-decoration: none;
-        }
+        .signin-note { text-align: center; margin-top: 1.75rem; font-size: 13px; color: var(--outline); }
+        .signin-note a { color: var(--primary); font-weight: 500; text-decoration: none; }
         .signin-note a:hover { text-decoration: underline; }
 
-        /* Corner chip */
-        .corner-chip {
-          position: absolute;
-          bottom: 1.5rem;
-          left: 1.5rem;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: var(--surface-container);
-          border: 1px solid var(--outline-variant);
-          border-radius: 100px;
-          padding: 5px 12px 5px 8px;
-        }
-        .corner-chip-dot {
-          width: 8px; height: 8px;
-          background: var(--tertiary);
-          border-radius: 50%;
-        }
-        .corner-chip-text {
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--on-surface-variant);
-          letter-spacing: 0.03em;
-        }
+        .corner-chip { position: absolute; bottom: 1.5rem; left: 1.5rem; display: flex; align-items: center; gap: 6px; background: var(--surface-container); border: 1px solid var(--outline-variant); border-radius: 100px; padding: 5px 12px 5px 8px; }
+        .corner-chip-dot { width: 8px; height: 8px; background: var(--tertiary); border-radius: 50%; }
+        .corner-chip-text { font-size: 11px; font-weight: 500; color: var(--on-surface-variant); letter-spacing: 0.03em; }
 
         /* ── Right decorative panel ── */
-        .reg-panel {
-          position: relative;
-          background: var(--inverse-surface);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          padding: 3.5rem;
-          overflow: hidden;
-        }
-
-        /* Teal glow */
-        .reg-panel::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 55% 45% at 70% 25%, rgba(56,102,99,0.45) 0%, transparent 65%),
-            radial-gradient(ellipse 40% 50% at 20% 80%, rgba(76,102,43,0.3) 0%, transparent 60%);
-        }
-
-        /* Concentric arcs */
-        .arc {
-          position: absolute;
-          border-radius: 50%;
-          border: 1px solid rgba(177,209,138,0.1);
-        }
+        .reg-panel { position: relative; background: var(--inverse-surface); display: flex; flex-direction: column; justify-content: center; padding: 3.5rem; overflow: hidden; }
+        .reg-panel::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 55% 45% at 70% 25%, rgba(56,102,99,0.45) 0%, transparent 65%), radial-gradient(ellipse 40% 50% at 20% 80%, rgba(76,102,43,0.3) 0%, transparent 60%); }
+        .arc { position: absolute; border-radius: 50%; border: 1px solid rgba(177,209,138,0.1); }
         .arc-1 { width: 500px; height: 500px; bottom: -160px; left: -180px; }
         .arc-2 { width: 340px; height: 340px; bottom: -100px; left: -100px; border-color: rgba(160,208,203,0.12); }
         .arc-3 { width: 200px; height: 200px; top: 60px; right: -70px; }
-
-        /* Noise texture overlay */
-        .reg-panel::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-          pointer-events: none;
-          opacity: 0.5;
-        }
+        .reg-panel::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; opacity: 0.5; }
 
         .panel-content { position: relative; z-index: 1; }
-
-        .panel-eyebrow {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(177,209,138,0.1);
-          border: 1px solid rgba(177,209,138,0.2);
-          border-radius: 100px;
-          padding: 5px 14px 5px 10px;
-          margin-bottom: 2rem;
-          width: fit-content;
-        }
-
-        .panel-eyebrow-dot {
-          width: 6px; height: 6px;
-          background: var(--inverse-primary);
-          border-radius: 50%;
-        }
-
-        .panel-eyebrow-text {
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--inverse-primary);
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-        }
-
-        .panel-headline {
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(1.8rem, 2.8vw, 2.5rem);
-          font-weight: 400;
-          line-height: 1.2;
-          color: #E2E3D8;
-          margin-bottom: 1rem;
-        }
-
-        .panel-headline em {
-          font-style: italic;
-          color: var(--inverse-primary);
-        }
-
-        .panel-sub {
-          font-size: 14px;
-          line-height: 1.75;
-          color: rgba(197,200,186,0.75);
-          max-width: 340px;
-          margin-bottom: 2.5rem;
-        }
-
-        /* Feature list */
-        .feature-list {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .feature-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .feature-icon {
-          width: 34px; height: 34px;
-          flex-shrink: 0;
-          border-radius: 10px;
-          background: rgba(205,237,163,0.1);
-          border: 1px solid rgba(205,237,163,0.18);
-          display: grid;
-          place-items: center;
-          color: var(--inverse-primary);
-        }
-
+        .panel-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(177,209,138,0.1); border: 1px solid rgba(177,209,138,0.2); border-radius: 100px; padding: 5px 14px 5px 10px; margin-bottom: 2rem; width: fit-content; }
+        .panel-eyebrow-dot { width: 6px; height: 6px; background: var(--inverse-primary); border-radius: 50%; }
+        .panel-eyebrow-text { font-size: 11px; font-weight: 500; color: var(--inverse-primary); letter-spacing: 0.07em; text-transform: uppercase; }
+        .panel-headline { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 2.8vw, 2.5rem); font-weight: 400; line-height: 1.2; color: #E2E3D8; margin-bottom: 1rem; }
+        .panel-headline em { font-style: italic; color: var(--inverse-primary); }
+        .panel-sub { font-size: 14px; line-height: 1.75; color: rgba(197,200,186,0.75); max-width: 340px; margin-bottom: 2.5rem; }
+        .feature-list { display: flex; flex-direction: column; gap: 14px; }
+        .feature-item { display: flex; align-items: center; gap: 12px; }
+        .feature-icon { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: rgba(205,237,163,0.1); border: 1px solid rgba(205,237,163,0.18); display: grid; place-items: center; color: var(--inverse-primary); }
         .feature-icon svg { width: 16px; height: 16px; }
+        .feature-text { font-size: 13.5px; color: rgba(225,228,213,0.8); line-height: 1.4; }
+        .feature-text strong { display: block; font-weight: 500; color: #E1E4D5; font-size: 14px; }
 
-        .feature-text {
-          font-size: 13.5px;
-          color: rgba(225,228,213,0.8);
-          line-height: 1.4;
-        }
-
-        .feature-text strong {
-          display: block;
-          font-weight: 500;
-          color: #E1E4D5;
-          font-size: 14px;
-        }
+        /* ── Toast ── */
+        .login-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 100px; font-size: 13.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(26,28,22,0.18); animation: loginToastIn 0.3s cubic-bezier(0.34,1.2,0.64,1); white-space: nowrap; }
+        .login-toast-error { background: #FFDAD6; color: #93000A; border: 1.5px solid #BA1A1A40; }
+        .login-toast-success { background: #CDEDA3; color: #354E16; border: 1.5px solid rgba(76,102,43,0.25); }
+        @keyframes loginToastIn { from { opacity: 0; transform: translateX(-50%) translateY(12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 900px) {
           .reg-root { grid-template-columns: 1fr; }
-
-          .reg-panel {
-            order: -1;
-            padding: 2rem 1.5rem;
-            min-height: 220px;
-            justify-content: flex-start;
-          }
-
+          .reg-panel { order: -1; padding: 2rem 1.5rem; min-height: 220px; justify-content: flex-start; }
           .panel-sub { display: none; }
           .feature-list { flex-direction: row; flex-wrap: wrap; gap: 10px; }
           .feature-item { flex-direction: column; align-items: flex-start; gap: 6px; flex: 1 1 140px; }
@@ -601,11 +271,9 @@ export default function Register() {
           .arc-2 { width: 180px; height: 180px; bottom: -60px; left: -50px; }
           .arc-3 { display: none; }
           .panel-headline { font-size: 1.5rem; margin-bottom: 0.5rem; }
-
           .reg-form-wrap { padding: 2rem 1.5rem; }
           .corner-chip { display: none; }
         }
-
         @media (max-width: 480px) {
           .reg-panel { padding: 1.75rem 1.25rem; }
           .panel-headline { font-size: 1.35rem; }
@@ -613,7 +281,6 @@ export default function Register() {
           .feature-item { flex: 1 1 120px; }
           .feature-text { font-size: 12px; }
           .reg-form-wrap { padding: 1.75rem 1.25rem 4rem; }
-          .sso-row { grid-template-columns: 1fr; }
           .logo-mark { margin-bottom: 1.75rem; }
           .form-heading { font-size: 1.5rem; }
         }
@@ -623,7 +290,6 @@ export default function Register() {
         {/* ── Left form panel ── */}
         <main className="reg-form-wrap">
           <div className="form-container">
-            {/* Logo */}
             <div className="logo-mark">
               <div className="logo-icon">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -633,7 +299,6 @@ export default function Register() {
               <span className="logo-name">Mendly</span>
             </div>
 
-            {/* Progress dots */}
             <div className="steps" aria-label="Step 1 of 3">
               <div className="step-dot active" />
               <div className="step-dot pending" />
@@ -652,7 +317,7 @@ export default function Register() {
             <form onSubmit={submit} noValidate>
               {/* Full name */}
               <div
-                className={`field${focusedField === "name" ? " focused" : ""}`}
+                className={`field${focusedField === "name" ? " focused" : ""}${errors.name ? " has-error" : ""}`}
               >
                 <label className="field-label" htmlFor="name">
                   Full name
@@ -682,15 +347,19 @@ export default function Register() {
                     value={form.name}
                     onFocus={() => setFocusedField("name")}
                     onBlur={() => setFocusedField(null)}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(e) => {
+                      setForm({ ...form, name: e.target.value });
+                      if (errors.name) setErrors({ ...errors, name: null });
+                    }}
                     required
                   />
                 </div>
+                <ErrorMsg msg={errors.name} />
               </div>
 
               {/* Email */}
               <div
-                className={`field${focusedField === "email" ? " focused" : ""}`}
+                className={`field${focusedField === "email" ? " focused" : ""}${errors.email ? " has-error" : ""}`}
               >
                 <label className="field-label" htmlFor="email">
                   Email address
@@ -720,17 +389,19 @@ export default function Register() {
                     value={form.email}
                     onFocus={() => setFocusedField("email")}
                     onBlur={() => setFocusedField(null)}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setForm({ ...form, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: null });
+                    }}
                     required
                   />
                 </div>
+                <ErrorMsg msg={errors.email} />
               </div>
 
               {/* Password */}
               <div
-                className={`field${focusedField === "password" ? " focused" : ""}`}
+                className={`field${focusedField === "password" ? " focused" : ""}${errors.password ? " has-error" : ""}`}
               >
                 <label className="field-label" htmlFor="password">
                   Password
@@ -763,6 +434,8 @@ export default function Register() {
                     onChange={(e) => {
                       setForm({ ...form, password: e.target.value });
                       calcStrength(e.target.value);
+                      if (errors.password)
+                        setErrors({ ...errors, password: null });
                     }}
                     required
                   />
@@ -808,7 +481,6 @@ export default function Register() {
                   </button>
                 </div>
 
-                {/* Strength meter */}
                 {form.password.length > 0 && (
                   <div className="strength-row">
                     <div className="strength-bars">
@@ -831,9 +503,10 @@ export default function Register() {
                     </span>
                   </div>
                 )}
+
+                <ErrorMsg msg={errors.password} />
               </div>
 
-              {/* Submit */}
               <button type="submit" className="btn-submit" disabled={loading}>
                 {loading ? (
                   <>
@@ -866,7 +539,6 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Corner chip */}
           <div className="corner-chip">
             <div className="corner-chip-dot" />
             <span className="corner-chip-text">Free forever plan</span>
@@ -944,6 +616,33 @@ export default function Register() {
           </div>
         </aside>
       </div>
+
+      {/* ── Toast ── */}
+      {toast && (
+        <div className={`login-toast login-toast-${toast.type}`}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {toast.type === "error" ? (
+              <>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </>
+            ) : (
+              <polyline points="20 6 9 17 4 12" />
+            )}
+          </svg>
+          {toast.message}
+        </div>
+      )}
     </>
   );
 }

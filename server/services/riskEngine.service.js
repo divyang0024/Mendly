@@ -62,18 +62,24 @@ export const analyzeRiskSignals = async (userId) => {
  */
 export const computeRiskLevel = (signals) => {
   const { avgEffectiveness, volatility, negativeRatio } = signals;
+console.log("Risk signals:", signals);
+  // ✅ return unknown if ANY signal is missing
+  if (
+    avgEffectiveness === 0 ||
+    volatility === 0 ||
+    negativeRatio === 0
+  ) {
+    return "unknown";
+  }
 
   let score = 0;
 
-  // low effectiveness increases risk
   if (avgEffectiveness < 1) score += 2;
   else if (avgEffectiveness < 2) score += 1;
 
-  // emotional instability
   if (volatility >= 7) score += 2;
   else if (volatility >= 3) score += 1;
 
-  // persistent negative emotions
   if (negativeRatio > 0.6) score += 2;
   else if (negativeRatio > 0.4) score += 1;
 
@@ -82,25 +88,31 @@ export const computeRiskLevel = (signals) => {
   return "low";
 };
 
-/**
- * Escalation Recommendation
- */
 export const getEscalationPlan = (riskLevel) => {
   switch (riskLevel) {
     case "high":
       return {
         reason: "Sustained distress with low coping effectiveness",
-        action: "Increase safety guidance and grounding interventions",
+        action:
+          "Prioritise crisis grounding techniques immediately. Prompt the user to reach out to a mental health professional or crisis line. Avoid open-ended emotional exploration until stabilised.",
       };
     case "moderate":
       return {
         reason: "Rising emotional instability detected",
-        action: "Use supportive + grounding therapist tone",
+        action:
+          "Introduce structured grounding exercises. Gently check in on coping tool usage. Encourage journaling or breathing sessions before deeper emotional processing.",
       };
-    default:
+    case "low":
       return {
         reason: "Stable emotional patterns",
-        action: "Continue balanced supportive guidance",
+        action:
+          "Maintain supportive tone. Reinforce current coping habits. Gradually introduce reflection prompts to deepen emotional awareness.",
+      };
+    default: // "unknown"
+      return {
+        reason: "Insufficient data to assess risk",
+        action:
+          "Adopt a neutral, open supportive tone. Encourage the user to engage with coping tools to build a baseline before risk assessment.",
       };
   }
 };

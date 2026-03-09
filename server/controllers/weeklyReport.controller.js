@@ -10,13 +10,18 @@ import {
 export const generateWeeklyReport = async (req, res) => {
   try {
     const userId = req.user;
-
     const report = await buildWeeklyReportForUser(userId);
 
-    res.json({
-      success: true,
-      report,
-    });
+    if (!report) {
+      return res
+        .status(200)
+        .json({
+          success: false,
+          message: "Not enough data to generate a report yet.",
+        });
+    }
+
+    res.json({ success: true, report });
   } catch (err) {
     console.error("Weekly report error:", err);
     res.status(500).json({ message: "Failed to generate report" });

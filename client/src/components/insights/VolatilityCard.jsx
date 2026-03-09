@@ -90,7 +90,20 @@ export default function VolatilityCard() {
     if (vol !== null) requestAnimationFrame(() => setAnimated(true));
   }, [vol]);
 
-  if (vol === null) return null;
+  if (vol === null || vol === undefined) {
+    return (
+      <div
+        className="vc-wrap"
+        style={{ padding: "24px 18px", textAlign: "center", }}
+      >
+        <p
+          style={{ color: "var(--outline)", fontSize: "13px", fontWeight: 300 }}
+        >
+          Not enough data yet to calculate emotional stability.
+        </p>
+      </div>
+    );
+  }
 
   const stable = 100 - vol;
   const meta = getVolMeta(vol);

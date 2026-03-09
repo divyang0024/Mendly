@@ -18,17 +18,32 @@ const generateHighlights = ({
 }) => {
   const highlights = [];
 
-  // Trend
-  if (trend.direction === "up") {
-    highlights.push("Your emotional health is improving over time.");
-  } else if (trend.direction === "down") {
-    highlights.push("Your emotional state has been declining recently.");
-  } else {
-    highlights.push("Your emotional state has remained stable.");
+  const totalUsage = Object.values(copingUsage || {}).reduce(
+    (a, b) => a + b,
+    0,
+  );
+
+  const hasToolData = totalUsage > 0;
+  const hasEmotionData = !!topEmotion;
+  const hasTriggerData = triggers && triggers.length > 0;
+
+  /* =========================
+     Trend (only if tool data exists)
+  ========================= */
+  if (hasToolData && trend) {
+    if (trend.direction === "up") {
+      highlights.push("Your emotional health is improving over time.");
+    } else if (trend.direction === "down") {
+      highlights.push("Your emotional state has been declining recently.");
+    } else {
+      highlights.push("Your emotional state has remained stable.");
+    }
   }
 
-  // Top emotion — only if we actually have real data
-  if (topEmotion) {
+  /* =========================
+     Top emotion
+  ========================= */
+  if (hasEmotionData) {
     if (topEmotion !== "neutral") {
       highlights.push(`You frequently experience ${topEmotion}.`);
     } else {
@@ -36,23 +51,32 @@ const generateHighlights = ({
     }
   }
 
-  // Best tool
-  if (bestTool && bestTool !== "none") {
+  /* =========================
+     Best tool
+  ========================= */
+  if (hasToolData && bestTool && bestTool !== "none") {
     highlights.push(
       `${bestTool} is currently your most effective coping tool.`,
     );
   }
 
-  // Most used tool
-  const mostUsed = Object.entries(copingUsage || {}).sort(
-    (a, b) => b[1] - a[1],
-  )[0];
-  if (mostUsed?.[0]) {
-    highlights.push(`You rely most on ${mostUsed[0]} for coping.`);
+  /* =========================
+     Most used tool
+  ========================= */
+  if (hasToolData) {
+    const mostUsed = Object.entries(copingUsage || {}).sort(
+      (a, b) => b[1] - a[1],
+    )[0];
+
+    if (mostUsed && mostUsed[1] > 0) {
+      highlights.push(`You rely most on ${mostUsed[0]} for coping.`);
+    }
   }
 
-  // Triggers
-  if (triggers.length > 0) {
+  /* =========================
+     Triggers
+  ========================= */
+  if (hasTriggerData) {
     highlights.push(`Frequent trigger detected: "${triggers[0].keyword}".`);
   }
 
@@ -209,36 +233,78 @@ export const buildLongTermSummary = async (userId) => {
   const bestTool = toolScores.length > 0 ? toolScores[0].tool : null;
 
   /* ==============================
-     6. TREND (based on coping sessions)
+     6. TREND (based on all tool sessions)
+     FIX: Sort oldest → newest so that:
+       - previous = oldest half  (slice 0 → half)
+       - recent   = newest half  (slice half → end)
+     This avoids comparing newest vs middle, and also correctly
+     handles odd-length arrays (no sessions silently dropped).
   ============================== */
-  const last20 = await CopingSession.find({ userId: objectId })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .lean();
+  const [
+    copingTrend,
+    activationTrend,
+    reframingTrend,
+    affirmationTrend,
+    breathingTrend,
+  ] = await Promise.all([
+    CopingSession.find({ userId: objectId })
+      .select("effectivenessScore createdAt")
+      .lean(),
 
-  const recent = last20.slice(0, 10);
-  const previous = last20.slice(10, 20);
+    ActivationSession.find({ userId: objectId, completed: true })
+      .select("effectivenessScore createdAt")
+      .lean(),
 
-  const avgRecent =
-    recent.length > 0
-      ? recent.reduce((a, b) => a + (b.effectivenessScore || 0), 0) /
-        recent.length
-      : 0;
+    ReframingSession.find({ userId: objectId })
+      .select("effectivenessScore createdAt")
+      .lean(),
 
-  const avgPrevious =
-    previous.length > 0
-      ? previous.reduce((a, b) => a + (b.effectivenessScore || 0), 0) /
-        previous.length
-      : 0;
+    AffirmationSession.find({ userId: objectId })
+      .select("effectivenessScore createdAt")
+      .lean(),
 
-  let direction = "stable";
-  if (avgRecent > avgPrevious + 0.3) direction = "up";
-  else if (avgRecent < avgPrevious - 0.3) direction = "down";
+    BreathingSession.find({ userId: objectId })
+      .select("effectivenessScore createdAt")
+      .lean(),
+  ]);
 
-  const trend = {
-    direction,
-    delta: Number((avgRecent - avgPrevious).toFixed(2)),
-  };
+  const allSessions = [
+    ...copingTrend,
+    ...activationTrend,
+    ...reframingTrend,
+    ...affirmationTrend,
+    ...breathingTrend,
+  ]
+    .filter((s) => typeof s.effectivenessScore === "number")
+    // ✅ FIX: sort oldest → newest (was newest → oldest)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  let trend = null;
+
+  if (allSessions.length >= 4) {
+    const half = Math.floor(allSessions.length / 2);
+
+    // ✅ FIX: previous = oldest half, recent = newest half
+    // slice(half) instead of slice(half, half * 2) so no sessions are dropped
+    const previous = allSessions.slice(0, half);
+    const recent = allSessions.slice(half);
+
+    const avgPrevious =
+      previous.reduce((a, b) => a + b.effectivenessScore, 0) / previous.length;
+
+    const avgRecent =
+      recent.reduce((a, b) => a + b.effectivenessScore, 0) / recent.length;
+
+    let direction = "stable";
+
+    if (avgRecent > avgPrevious + 0.3) direction = "up";
+    else if (avgRecent < avgPrevious - 0.3) direction = "down";
+
+    trend = {
+      direction,
+      delta: Number((avgRecent - avgPrevious).toFixed(2)),
+    };
+  }
 
   /* ==============================
      7. TRIGGERS

@@ -8,8 +8,14 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [toast, setToast] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -18,6 +24,9 @@ export default function Login() {
       const { data } = await loginUser(form);
       login(data.token, data.user);
       navigate("/");
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Invalid email or password.";
+      showToast(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -521,6 +530,39 @@ export default function Login() {
           .sso-row { grid-template-columns: 1fr; }
           .corner-chip { display: none; }
         }
+
+        .login-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 100px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 20px rgba(26,28,22,0.18);
+    animation: loginToastIn 0.3s cubic-bezier(0.34,1.2,0.64,1);
+    white-space: nowrap;
+  }
+  .login-toast-error {
+    background: #FFDAD6;
+    color: #93000A;
+    border: 1.5px solid #BA1A1A40;
+  }
+  .login-toast-success {
+    background: #CDEDA3;
+    color: #354E16;
+    border: 1.5px solid rgba(76,102,43,0.25);
+  }
+  @keyframes loginToastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
       `}</style>
 
       <div className="login-root">
@@ -706,11 +748,11 @@ export default function Login() {
               </div>
 
               {/* Forgot */}
-              <div className="forgot-row">
+              {/* <div className="forgot-row">
                 <a href="/forgot-password" className="forgot-link">
                   Forgot password?
                 </a>
-              </div>
+              </div> */}
 
               {/* Submit */}
               <button type="submit" className="btn-submit" disabled={loading}>
@@ -740,7 +782,31 @@ export default function Login() {
               </button>
             </form>
           </div>
-
+          {toast && (
+            <div className={`login-toast login-toast-${toast.type}`}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {toast.type === "error" ? (
+                  <>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </>
+                ) : (
+                  <polyline points="20 6 9 17 4 12" />
+                )}
+              </svg>
+              {toast.message}
+            </div>
+          )}
           {/* Corner decoration */}
           <div className="corner-chip">
             <div className="corner-chip-dot" />

@@ -382,11 +382,11 @@ export default function Insights() {
               <div className="i-card-flush i-anim-6">
                 <CheckinHeatmap />
               </div>
-              <div className="i-card i-anim-7">
+              {/* <div className="i-card i-anim-7">
                 <div className="i-card-body">
                   <WeeklyReport />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

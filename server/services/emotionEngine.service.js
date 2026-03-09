@@ -104,7 +104,7 @@ export const getEmotionalVolatility = async (userId) => {
     .sort({ createdAt: 1 })
     .limit(30);
 
-  if (messages.length < 2) return { volatility: 0 };
+  if (messages.length < 2) return { volatility: null }; // ✅ null = no data
 
   let changes = 0;
   for (let i = 1; i < messages.length; i++) {
@@ -118,6 +118,6 @@ export const getEmotionalVolatility = async (userId) => {
   }
 
   return {
-    volatility: Math.round((changes / messages.length) * 100),
+    volatility: Math.round((changes / (messages.length - 1)) * 100), // ✅ correct denominator
   };
 };

@@ -1,4 +1,6 @@
 export default function EscalationCard({ escalation }) {
+
+  console.log("Rendering EscalationCard with escalation:", escalation);
   return (
     <>
       <style>{`

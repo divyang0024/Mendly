@@ -7,29 +7,32 @@ import { generateWeeklyAIReport } from "./weeklyReport.service.js";
 ============================================================ */
 export const buildWeeklyReportForUser = async (userId) => {
   const now = new Date();
-
   const weekEnd = new Date(now);
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - 7);
 
-  // 1. Build summary
   const longTermData = await buildLongTermSummary(userId);
 
-  // 2. Generate AI report text
+  // ✅ Require at least 3 sessions AND some emotion data before generating
+  const hasEnoughData =
+    longTermData.summary.totalSessions >= 3 &&
+    longTermData.summary.topEmotion !== null;
+
+  if (!hasEnoughData) {
+    return null;
+  }
+
   const aiReportText = await generateWeeklyAIReport(longTermData);
 
-  // 3. Save report
   const report = await WeeklyReport.create({
     userId,
     weekStart,
     weekEnd,
-
     summary: longTermData.summary,
     trend: longTermData.trend,
     copingUsage: longTermData.copingUsage,
     triggers: longTermData.triggers,
     highlights: longTermData.highlights,
-
     aiReportText,
   });
 
