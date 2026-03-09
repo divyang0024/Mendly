@@ -18,4 +18,3 @@ export default socket;
 
 Then in your Vercel environment variables add:
 ```
-VITE_BACKEND_URL=https://your-actual-backend-url.com
