@@ -97,21 +97,21 @@ export default function WeeklyReportPage() {
   }, [countdown, fetchAndMaybeGenerate]);
 
   // ── Loading / generating ──
-  if (loading || generating) {
-    return (
-      <>
-        <style>{baseStyles}</style>
-        <div className="wrp-loading">
-          <div className="wrp-spinner" />
-          <p className="wrp-loading-text">
-            {generating
-              ? "Generating your weekly report…"
-              : "Loading your emotional report…"}
-          </p>
-        </div>
-      </>
-    );
-  }
+  // if (loading || generating) {
+  //   return (
+  //     <>
+  //       <style>{baseStyles}</style>
+  //       <div className="wrp-loading">
+  //         <div className="wrp-spinner" />
+  //         <p className="wrp-loading-text">
+  //           {generating
+  //             ? "Generating your weekly report…"
+  //             : "Loading your emotional report…"}
+  //         </p>
+  //       </div>
+  //     </>
+  //   );
+  // }
 
   return (
     <>
