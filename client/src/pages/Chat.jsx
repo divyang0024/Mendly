@@ -27,13 +27,11 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* Close sidebar on session select (mobile UX) */
   const handleSelectSession = (id) => {
     selectSession(id);
     setSidebarOpen(false);
   };
 
-  /* Close sidebar on new session (mobile UX) */
   const handleNewSession = () => {
     newSession();
     setSidebarOpen(false);
@@ -44,7 +42,6 @@ export default function Chat() {
       <style>{chatStyles}</style>
 
       <div className="chat-root">
-        {/* ── Backdrop (mobile only) ── */}
         {sidebarOpen && (
           <div
             className="chat-backdrop"
@@ -52,7 +49,6 @@ export default function Chat() {
           />
         )}
 
-        {/* ── Sidebar ── */}
         <aside className={`chat-sidebar${sidebarOpen ? " is-open" : ""}`}>
           <SessionList
             sessions={sessions}
@@ -63,12 +59,9 @@ export default function Chat() {
           />
         </aside>
 
-        {/* ── Main ── */}
         <div className="chat-main">
-          {/* Top bar */}
           <header className="chat-topbar">
             <div className="chat-topbar-left">
-              {/* Back button */}
               <button
                 className="chat-icon-btn"
                 onClick={() => navigate(-1)}
@@ -88,7 +81,6 @@ export default function Chat() {
                 </svg>
               </button>
 
-              {/* Sidebar toggle (mobile only) */}
               <button
                 className="chat-icon-btn chat-menu-btn"
                 onClick={() => setSidebarOpen((v) => !v)}
@@ -113,7 +105,6 @@ export default function Chat() {
                 )}
               </button>
 
-              {/* Session badge */}
               <div className="chat-session-badge">
                 <div className="chat-session-badge-dot" />
                 <span className="chat-session-badge-text">
@@ -129,10 +120,8 @@ export default function Chat() {
             </span>
           </header>
 
-          {/* Crisis banner */}
           <CrisisAlert isSafety={isSafetyActive} />
 
-          {/* Messages */}
           <div className="chat-messages">
             {messages.length === 0 ? (
               <div className="chat-empty">
@@ -174,7 +163,6 @@ export default function Chat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <ChatInput onSend={send} />
         </div>
       </div>
@@ -295,7 +283,6 @@ body {
   backdrop-filter: blur(10px);
   flex-shrink: 0;
   gap: 8px;
-  /* ✅ Fix: keep topbar above safe area on notched phones */
   padding-top: env(safe-area-inset-top);
 }
 .chat-topbar-left {
@@ -303,6 +290,8 @@ body {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 /* Icon buttons */
@@ -341,7 +330,9 @@ body {
   border: 1px solid var(--outline-variant);
   border-radius: 100px;
   padding: 4px 12px;
-  min-width: 0; overflow: hidden;
+  min-width: 0;
+  overflow: hidden;
+  flex-shrink: 1;
 }
 .chat-session-badge-dot {
   width: 6px; height: 6px;
@@ -357,6 +348,7 @@ body {
   color: var(--on-surface-variant);
   letter-spacing: 0.02em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 120px;
 }
 .chat-msg-count {
   font-size: 12px; color: var(--outline); flex-shrink: 0;
@@ -368,7 +360,6 @@ body {
   overflow-y: auto;
   padding: 20px 20px 8px;
   scroll-behavior: smooth;
-  /* ✅ Fix: allow scrolling past bottom nav on iOS */
   -webkit-overflow-scrolling: touch;
 }
 .chat-messages::-webkit-scrollbar { width: 5px; }
@@ -454,7 +445,7 @@ body {
 
 @media (max-width: 380px) {
   .chat-session-badge { padding: 4px 9px; }
-  .chat-session-badge-text { display: none; }
+  .chat-session-badge-text { font-size: 11px; max-width: 80px; }
   .chat-empty h3 { font-size: 1.1rem; }
   .chat-empty p { font-size: 13px; }
 }
