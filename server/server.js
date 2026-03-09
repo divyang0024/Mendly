@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://mendly-ai.vercel.app/",
+    origin: "https://mendly-ai.vercel.app",
     credentials: true,
   },
 });
