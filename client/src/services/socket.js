@@ -14,7 +14,3 @@ socket.on("connect_error", (err) => console.error("❌ Socket error:", err.messa
 socket.on("disconnect", (reason) => console.log("🔌 Socket disconnected:", reason));
 
 export default socket;
-```
-
-Then in your Vercel environment variables add:
-```
