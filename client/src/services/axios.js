@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://mendly-ai.vercel.app" || "http://localhost:5000",
+  baseURL: "https://mendly-quoe.onrender.com",
   withCredentials: true,
 });
 
