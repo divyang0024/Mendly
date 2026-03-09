@@ -13,12 +13,17 @@ export const chatSocketHandler = (io) => {
   // Authenticate every socket connection with JWT
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
+    console.log("🔑 Token received:", token);
+
     if (!token) return next(new Error("Unauthorized"));
+
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ Token decoded:", decoded);
       socket.userId = decoded.id;
       next();
-    } catch {
+    } catch (err) {
+      console.error("❌ JWT error:", err.message);
       next(new Error("Unauthorized"));
     }
   });
@@ -167,7 +172,6 @@ export const chatSocketHandler = (io) => {
           aiText = await generateAIResponse(modelMessages);
         } catch (aiErr) {
           console.error("generateAIResponse error:", aiErr);
-          // ✅ Fix: only emit ai_message_error, no duplicate ai_message
           socket.emit("ai_message_error", {
             error: "AI generation failed",
             sessionId,
@@ -197,7 +201,6 @@ export const chatSocketHandler = (io) => {
         });
       } catch (err) {
         console.error("send_message error:", err);
-        // ✅ Fix: emit ai_message_error so frontend clears typing indicator
         socket.emit("ai_message_error", {
           error: "Something went wrong",
           sessionId,
