@@ -10,11 +10,24 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  "https://mendly-ai.vercel.app",
+  "https://mendly-lovat.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://mendly-ai.vercel.app",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
     credentials: true,
   },
 });

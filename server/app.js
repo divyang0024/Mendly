@@ -16,17 +16,29 @@ import riskRoutes from "./routes/risk.routes.js";
 import longtermRoutes from "./routes/longterm.routes.js";
 import weeklyReportRoutes from "./routes/weeklyReport.routes.js";
 import checkinRoutes from "./routes/dailyCheckin.routes.js";
-
 import { errorHandler } from "./middleware/error.middleware.js";
+
+const allowedOrigins = [
+  "https://mendly-ai.vercel.app",
+  "https://mendly-lovat.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
+  credentials: true,
+};
+
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://mendly-ai.vercel.app",
-    credentials: true,
-  }),
-);
-
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
