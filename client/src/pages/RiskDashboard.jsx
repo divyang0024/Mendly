@@ -389,7 +389,7 @@ const styles = {
   },
   assessmentInner: {
     display: "grid",
-    gridTemplateColumns: "220px 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     alignItems: "stretch",
   },
   badgeColumn: {
@@ -398,11 +398,10 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     gap: 14,
-
     padding: "28px 26px",
-
     background: "var(--surface-container)",
     borderRight: "1px solid var(--outline-variant)",
+    borderBottom: "1px solid var(--outline-variant)",
   },
   assessmentLabel: {
     font: "var(--md-label-medium)",
