@@ -23,7 +23,7 @@ const ai = new GoogleGenAI({
   }));
 
   const response = await ai.models.generateContent({
-    model: "gemma-3-4b-it",
+    model: "gemini-3.1-flash-lite",
     contents,
   });
 
